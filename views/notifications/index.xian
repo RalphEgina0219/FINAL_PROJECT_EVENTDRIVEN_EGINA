@@ -1,0 +1,32 @@
+{{> layout_top}}
+<div class="mx-auto max-w-3xl">
+  <div class="mb-4 flex items-center justify-between gap-2">
+    <p class="text-sm text-slate-500">{{#if unreadNotifications}}{{unreadNotifications}} unread{{else}}You're all caught up.{{/if}}</p>
+    {{#if unreadNotifications}}
+    <form method="POST" action="/notifications/read-all"><input type="hidden" name="_csrf" value="{{csrfToken}}"><button class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm hover:bg-slate-50">Mark all as read</button></form>
+    {{/if}}
+  </div>
+  <section class="rounded-xl border border-slate-200 bg-white shadow-sm">
+    {{#if rows.length}}
+    <ul class="divide-y divide-slate-100">
+      {{#each rows}}
+      <li>
+        <a href="/notifications/{{id}}/open" class="flex gap-3 px-4 py-3 hover:bg-slate-50 {{#unless read_at}}bg-violet-50/50{{/unless}}">
+          <span class="mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full {{#if (eq type "sla_overdue")}}bg-red-100 text-red-700{{else}}bg-slate-100 text-slate-600{{/if}}">{{#if (eq type "sla_overdue")}}{{icon "clock" "h-4 w-4"}}{{else if (eq type "new_reply")}}{{icon "chat" "h-4 w-4"}}{{else if (eq type "feedback")}}{{icon "star" "h-4 w-4"}}{{else if (eq type "escalation")}}{{icon "arrowUp" "h-4 w-4"}}{{else if (eq type "assignment")}}{{icon "user" "h-4 w-4"}}{{else}}{{icon "bell" "h-4 w-4"}}{{/if}}</span>
+          <div class="min-w-0 flex-1">
+            <p class="text-sm {{#unless read_at}}font-semibold text-slate-900{{else}}text-slate-700{{/unless}}">{{title}}</p>
+            {{#if message}}<p class="truncate text-sm text-slate-500">{{message}}</p>{{/if}}
+            <p class="mt-0.5 text-xs text-slate-400" title="{{formatDateTime created_at}}">{{timeAgo created_at}}</p>
+          </div>
+          {{#unless read_at}}<span class="mt-2 h-2.5 w-2.5 shrink-0 rounded-full bg-violet-500" title="Unread"></span><span class="sr-only">Unread</span>{{/unless}}
+        </a>
+      </li>
+      {{/each}}
+    </ul>
+    {{else}}
+    <div class="px-6 py-12 text-center text-sm text-slate-500">{{icon "bell" "mx-auto mb-2 h-8 w-8 text-slate-300"}}No notifications yet.</div>
+    {{/if}}
+    {{> pagination}}
+  </section>
+</div>
+{{> layout_bottom}}

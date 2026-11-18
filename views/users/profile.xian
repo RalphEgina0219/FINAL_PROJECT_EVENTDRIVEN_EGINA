@@ -1,0 +1,36 @@
+{{> layout_top}}
+<div class="mx-auto grid max-w-4xl gap-6 lg:grid-cols-2">
+  <section class="space-y-3 rounded-xl border border-slate-200 bg-white p-6 text-sm shadow-sm">
+    <h2 class="font-semibold">My account</h2>
+    <dl class="space-y-2">
+      <div class="flex justify-between gap-2"><dt class="text-slate-500">Name</dt><dd>{{me.display_name}}</dd></div>
+      <div class="flex justify-between gap-2"><dt class="text-slate-500">Sign-in email</dt><dd>{{me.email}}</dd></div>
+      <div class="flex justify-between gap-2"><dt class="text-slate-500">CRM role</dt><dd>{{roleLabel me.role}}</dd></div>
+      {{#if me.team_name}}<div class="flex justify-between gap-2"><dt class="text-slate-500">Team</dt><dd>{{me.team_name}}</dd></div>{{/if}}
+      <div class="flex justify-between gap-2"><dt class="text-slate-500">Last sign-in</dt><dd>{{formatDateTime me.last_login_at}}</dd></div>
+    </dl>
+    {{#if me.employee_id}}
+    <div class="rounded-lg border border-slate-100 bg-slate-50 p-3">
+      <p class="mb-2 text-xs font-medium uppercase text-slate-500">From JOHNVIVZ HR {{#if me.is_mock}}{{mockBadge}}{{/if}}</p>
+      <dl class="space-y-1">
+        <div class="flex justify-between gap-2"><dt class="text-slate-500">Employee ID</dt><dd class="font-mono text-xs">{{me.employee_id}}</dd></div>
+        <div class="flex justify-between gap-2"><dt class="text-slate-500">Department</dt><dd>{{me.department_name}}</dd></div>
+        <div class="flex justify-between gap-2"><dt class="text-slate-500">Position</dt><dd>{{me.position_title}}</dd></div>
+        <div class="flex justify-between gap-2"><dt class="text-slate-500">Employment status</dt><dd>{{employmentLabel me.employment_status}}</dd></div>
+        <div class="flex justify-between gap-2"><dt class="text-slate-500">Last synced</dt><dd>{{formatDateTime me.last_synced_at}}</dd></div>
+      </dl>
+      <p class="mt-2 text-xs text-slate-500">HR owns these details. Ask HR to correct them; CRM cannot edit them.</p>
+    </div>
+    {{else}}<p class="text-xs text-slate-500">Setup account: not linked to an HR employee and outside the CRM hierarchy.</p>{{/if}}
+  </section>
+  <form method="POST" action="/profile/password" class="space-y-4 rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+    <input type="hidden" name="_csrf" value="{{csrfToken}}">
+    <h2 class="font-semibold">Change password</h2>
+    <div><label class="block text-sm font-medium text-slate-700" for="current_password">Current password</label><input id="current_password" type="password" name="current_password" required autocomplete="current-password" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2"></div>
+    <div><label class="block text-sm font-medium text-slate-700" for="new_password">New password</label><input id="new_password" type="password" name="password" required minlength="8" autocomplete="new-password" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2"></div>
+    <div><label class="block text-sm font-medium text-slate-700" for="confirm_password">Confirm new password</label><input id="confirm_password" type="password" name="confirm_password" required minlength="8" autocomplete="new-password" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2"></div>
+    <button class="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700">Change password</button>
+  </form>
+</div>
+{{#if showMyRequests}}<div class="mx-auto mt-6 max-w-4xl" aria-label="My requests">{{> my_requests_card}}</div>{{/if}}
+{{> layout_bottom}}

@@ -1,0 +1,52 @@
+{{> layout_top welcome=true welcomeText="Here's what is happening with your team today."}}
+{{> demo_notice}}
+<div class="grid grid-cols-2 gap-4 lg:grid-cols-4">
+  {{> stat label="Total agents" value=agentCount href="/crm/team-performance" hint=currentUser.team_name}}
+  {{> stat label="Assigned cases (active)" value=summary.active_count href="/crm/cases?status=active"}}
+  {{> stat label="Unassigned (queue)" value=summary.unassigned_count href="/crm/queue" alert=summary.unassigned_count}}
+  {{> stat label="Escalations to me" value=summary.escalated_count href="/crm/escalations" alert=summary.escalated_count}}
+  {{> stat label="Pending responses" value=summary.awaiting_first_response href="/crm/cases?status=in_progress" hint="In progress, no first reply yet"}}
+  {{> stat label="Overdue (SLA)" value=summary.overdue_count href="/crm/cases?overdue=1" alert=summary.overdue_count}}
+  {{> stat label="Avg. response time" display=(duration times.avg_first_response) icon="clock" tone="sky" hint=(concat times.responded_count " case(s) answered")}}
+  {{> stat label="Resolution rate" value=summary.resolution_rate href="/crm/reports" hint=(concat summary.done_count " resolved / closed (%)")}}
+  {{> stat label="Overdue follow-ups" value=followUps.overdue href="/crm/follow-ups?status=overdue" alert=followUps.overdue hint=(concat followUps.pending " pending")}}
+  {{> stat label="Open inquiries" value=inquiries.open href="/crm/inquiries?status=open" alert=inquiries.unclaimed hint=(concat inquiries.unclaimed " with no handler")}}
+</div>
+
+<div class="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-3">
+  <section class="rounded-xl border border-slate-200 bg-white shadow-sm lg:col-span-2">
+    <div class="flex items-center justify-between border-b border-slate-100 px-4 py-3"><h2 class="font-semibold">Customer queue (needs an agent)</h2><a href="/crm/queue" class="text-sm text-violet-700 hover:underline">Open queue</a></div>
+    {{> case_table cases=queue base="/crm/cases" showCustomer=true emptyText="No unassigned cases."}}
+  </section>
+  <div class="space-y-6">
+    <section class="rounded-xl border border-slate-200 bg-white shadow-sm">
+      <div class="border-b border-slate-100 px-4 py-3"><h2 class="font-semibold">Escalations to review</h2></div>
+      {{#if escalations.length}}<ul class="divide-y divide-slate-100 text-sm">{{#each escalations}}<li class="px-4 py-3"><a href="/crm/cases/{{id}}" class="font-medium text-violet-700 hover:underline">{{case_no}}</a> · {{escalated_by_name}}<p class="text-xs text-slate-500">“{{reason}}”</p></li>{{/each}}</ul>
+      {{else}}<p class="px-4 py-6 text-center text-sm text-slate-500">Nothing to review.</p>{{/if}}
+    </section>
+  </div>
+</div>
+
+<section class="mt-6 rounded-xl border border-slate-200 bg-white shadow-sm">
+  <div class="flex items-center justify-between border-b border-slate-100 px-4 py-3"><h2 class="font-semibold">Agent performance — {{currentUser.team_name}}</h2><a href="/crm/team-performance" class="text-sm text-violet-700 hover:underline">Details</a></div>
+  {{> workload_table}}
+</section>
+<section class="mt-6" aria-label="Employee approvals">
+  <div class="mb-3 flex items-center justify-between"><h2 class="font-semibold text-slate-900">Employee approvals</h2><a href="/crm/approvals" class="text-sm text-violet-700 hover:underline">Approvals Queue</a></div>
+  {{#if approvals.enabled}}<div class="grid grid-cols-2 gap-4 lg:grid-cols-4">{{> stat label="Requests waiting for me" value=approvals.mine href="/crm/approvals?view=queue" alert=approvals.mine}}</div>
+  {{else}}<p class="rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-500">Approvals are not enabled yet. Leave, overtime and attendance requests are filed in ESS (Accounting app). Your Team Leader gives the first approval and Accounting/Payroll gives the final approval, both in ESS.</p>{{/if}}
+</section>
+<section class="mt-6" aria-label="Team orders">
+  <div class="mb-3 flex items-center justify-between"><h2 class="font-semibold text-slate-900">Team orders</h2><a href="/crm/sales" class="text-sm text-violet-700 hover:underline">All orders</a></div>
+  <div class="grid grid-cols-2 gap-4 lg:grid-cols-4">
+    {{> stat label="Orders today" value=sales.today_orders href="/crm/sales"}}
+    {{> stat label="Completed sales today" value=sales.today_sales money=true href="/crm/sales?status=completed"}}
+    {{> stat label="Awaiting payment" value=sales.awaiting_payment href="/crm/sales?payment=unpaid" alert=sales.awaiting_payment}}
+    {{> stat label="Payments to verify" value=sales.to_verify href="/crm/sales/payments?status=recorded" alert=sales.to_verify}}
+    {{> stat label="Refunds to decide" value=refunds.requested href="/crm/sales/refunds?status=requested" alert=refunds.requested}}
+    {{> stat label="Promotions to approve" value=promoPending href="/crm/promotions?status=pending_approval" alert=promoPending}}
+  </div>
+</section>
+{{> team_targets}}
+<div class="mt-6" aria-label="My requests">{{> my_requests_card}}</div>
+{{> layout_bottom}}

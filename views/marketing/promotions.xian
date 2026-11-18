@@ -1,0 +1,36 @@
+{{> layout_top}}
+{{> area_tabs}}
+<div class="mb-4 flex flex-wrap items-center justify-between gap-2">
+  <p class="text-xs text-slate-500">The Manager creates a promotion; a Team Leader or Manager who did not create it approves it. Customers enter the code at checkout; prices still come from Inventory.</p>
+  {{#if canCreate}}<a href="/crm/promotions/new" class="inline-flex rounded-lg bg-violet-700 px-4 py-2 text-sm font-medium text-white hover:bg-violet-800">New promotion</a>{{/if}}
+</div>
+<form method="GET" action="/crm/promotions" class="mb-4 flex flex-wrap items-end gap-2 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+  <div class="min-w-0 flex-1"><label class="text-xs font-medium text-slate-500" for="q">Search</label><input id="q" name="q" value="{{filters.q}}" placeholder="Code or name" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"></div>
+  <div><label class="text-xs font-medium text-slate-500" for="status">Status</label><select id="status" name="status" class="mt-1 rounded-lg border border-slate-300 px-3 py-2 text-sm"><option value="">All</option>{{#each statusOptions}}<option value="{{value}}" {{#if sel}}selected{{/if}}>{{label}}</option>{{/each}}</select></div>
+  <button class="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700">Filter</button>
+</form>
+<section class="rounded-xl border border-slate-200 bg-white shadow-sm">
+  {{#if rows.length}}
+  <div class="overflow-x-auto"><table class="stack min-w-full text-sm">
+    <thead class="bg-slate-50 text-left text-xs font-medium uppercase tracking-wide text-slate-500"><tr><th class="px-4 py-2">Promotion</th><th class="px-4 py-2">Discount</th><th class="px-4 py-2">Valid</th><th class="px-4 py-2 text-right">Used</th><th class="px-4 py-2">Status</th><th class="px-4 py-2">Actions</th></tr></thead>
+    <tbody class="divide-y divide-slate-100">
+    {{#each rows}}
+      <tr class="hover:bg-slate-50">
+        <td class="px-4 py-3"><span class="font-mono font-semibold">{{promo_code}}</span> {{#if is_demo}}{{demoBadge}}{{/if}}<p class="text-slate-700">{{name}}</p><p class="text-xs text-slate-500">{{#if campaign_name}}Campaign: {{campaign_name}} · {{/if}}by {{created_by_name}}{{#if approved_by_name}}, approved by {{approved_by_name}}{{/if}}</p></td>
+        <td class="px-4 py-3">{{type_label}}<p class="text-xs text-slate-500">{{#if min_order_amount}}min {{peso min_order_amount}} · {{/if}}{{applies_to}}</p></td>
+        <td class="whitespace-nowrap px-4 py-3 text-slate-600">{{formatDate start_at}} – {{formatDate end_at}}</td>
+        <td class="px-4 py-3 text-right tabular-nums">{{used_count}}{{#if usage_limit}} / {{usage_limit}}{{/if}}</td>
+        <td class="px-4 py-3">{{status_label}}</td>
+        <td class="px-4 py-3"><div class="flex flex-wrap items-center gap-2 text-xs">
+          {{#if canDecide}}<form method="POST" action="/crm/promotions/{{id}}/approve"><input type="hidden" name="_csrf" value="{{@root.csrfToken}}"><button class="rounded border border-emerald-300 px-2 py-1 font-medium text-emerald-700 hover:bg-emerald-50">Approve</button></form>
+            <form method="POST" action="/crm/promotions/{{id}}/reject" class="flex items-center gap-1"><input type="hidden" name="_csrf" value="{{@root.csrfToken}}"><input name="reason" required minlength="5" maxlength="200" placeholder="Reason" aria-label="Reason to reject" class="w-28 rounded border border-slate-300 px-2 py-1"><button class="text-red-600 hover:underline">Reject</button></form>{{/if}}
+          {{#if ownPending}}<span class="text-slate-500">Waiting for someone else to approve</span>{{/if}}
+          {{#if canCancel}}<form method="POST" action="/crm/promotions/{{id}}/cancel" onsubmit="return confirm('Cancel this promotion?');"><input type="hidden" name="_csrf" value="{{@root.csrfToken}}"><button class="text-slate-500 hover:underline">Cancel</button></form>{{/if}}
+        </div></td>
+      </tr>
+    {{/each}}
+    </tbody></table></div>
+  {{else}}<p class="px-6 py-10 text-center text-sm text-slate-500">No promotions yet.</p>{{/if}}
+  {{> pagination}}
+</section>
+{{> layout_bottom}}

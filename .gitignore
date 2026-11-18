@@ -1,0 +1,9 @@
+node_modules/
+.env
+storage/attachments/*
+!storage/attachments/.gitkeep
+npm-debug.log*
+.DS_Store
+Thumbs.db
+backups/
+merge-kit-secrets/

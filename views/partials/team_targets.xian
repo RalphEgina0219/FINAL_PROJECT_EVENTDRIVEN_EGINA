@@ -1,0 +1,11 @@
+<section class="mt-8 rounded-xl border border-slate-200 bg-white p-5 shadow-sm" aria-label="Team targets" data-team-targets="1">
+  <div class="flex flex-wrap items-baseline justify-between gap-2"><h2 class="font-semibold text-slate-900">Team targets (last {{targets.days}} days)</h2>{{#if targets.includesDemo}}<span class="rounded bg-amber-50 px-2 py-0.5 text-xs text-amber-800" data-includes-demo="1">includes demo data</span>{{/if}}</div>
+  <p class="mt-1 text-xs text-slate-500">Measured against the service targets (CRM Rules &amp; SLA) from real cases: how often the first reply and the resolution came before their due time.</p>
+  <div class="mt-4 grid gap-4 sm:grid-cols-2">
+    <div><p class="text-sm text-slate-600">First response on time</p><p class="text-3xl font-semibold tabular-nums">{{#if targets.firstResponse.total}}{{targets.firstResponse.pct}}%{{else}}—{{/if}}</p><p class="text-xs text-slate-500">{{targets.firstResponse.met}} of {{targets.firstResponse.total}} case(s)</p>
+      <div class="mt-2 h-2 rounded-full bg-slate-100"><div class="h-2 rounded-full bg-violet-600" style="width: {{#if targets.firstResponse.pct}}{{targets.firstResponse.pct}}{{else}}0{{/if}}%"></div></div></div>
+    <div><p class="text-sm text-slate-600">Resolved on time</p><p class="text-3xl font-semibold tabular-nums">{{#if targets.resolution.total}}{{targets.resolution.pct}}%{{else}}—{{/if}}</p><p class="text-xs text-slate-500">{{targets.resolution.met}} of {{targets.resolution.total}} case(s)</p>
+      <div class="mt-2 h-2 rounded-full bg-slate-100"><div class="h-2 rounded-full bg-emerald-600" style="width: {{#if targets.resolution.pct}}{{targets.resolution.pct}}{{else}}0{{/if}}%"></div></div></div>
+  </div>
+  {{#if targets.targets.length}}<p class="mt-4 flex flex-wrap gap-x-3 gap-y-1 text-xs text-slate-500"><span>Targets:</span>{{#each targets.targets}}<span class="whitespace-nowrap">{{priority}}: reply {{firstResponseHours}} h, resolve {{resolutionHours}} h{{#if teamSpecific}} (team){{/if}}</span>{{/each}}</p>{{/if}}
+</section>

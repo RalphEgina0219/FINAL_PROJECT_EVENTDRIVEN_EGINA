@@ -1,0 +1,22 @@
+{{> head}}
+<body class="jvz-app min-h-screen bg-slate-50 font-sans text-slate-800 antialiased">
+<div class="grid min-h-screen lg:grid-cols-[1.05fr_1fr]">
+  <div class="jvz-hero hidden flex-col justify-between p-10 lg:flex xl:p-14">
+    <div class="flex items-center gap-3">
+      <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-white p-1 shadow-lg shadow-black/20"><img src="/images/logo-mark.png" alt="JOHNVIVZ logo" class="h-full w-full object-contain"></span>
+      <div class="leading-tight"><p class="text-2xl font-extrabold tracking-tight text-white">JOHNVIVZ <span class="text-brand-300">CRM</span></p><p class="text-xs text-blue-200/80">Serve · Sell · Retain</p></div>
+    </div>
+    <div class="max-w-md">
+      <h2 class="text-4xl font-extrabold leading-tight tracking-tight text-white xl:text-5xl">{{#if heroTitle}}{{heroTitle}}{{else}}Smart Service.<br>Happy Customers.{{/if}}</h2>
+      <p class="mt-4 text-blue-100/90">{{#if heroText}}{{heroText}}{{else}}Customers, inquiries, cases and sales for JOHNVIVZ Grocery in one modern workspace.{{/if}}</p>
+      <ul class="mt-8 space-y-3 text-sm font-medium text-white">
+        <li class="flex items-center gap-3"><span class="flex h-9 w-9 items-center justify-center rounded-lg bg-white/10 ring-1 ring-white/20">{{icon "shieldCheck" "h-5 w-5"}}</span>Secure &amp; Reliable</li>
+        <li class="flex items-center gap-3"><span class="flex h-9 w-9 items-center justify-center rounded-lg bg-white/10 ring-1 ring-white/20">{{icon "checkCircle" "h-5 w-5"}}</span>Easy to Use</li>
+        <li class="flex items-center gap-3"><span class="flex h-9 w-9 items-center justify-center rounded-lg bg-white/10 ring-1 ring-white/20">{{icon "lock" "h-5 w-5"}}</span>Compliant with RA 10173</li>
+      </ul>
+    </div>
+    <p class="text-xs text-blue-200/70">One of four JOHNVIVZ applications (HR · Accounting &amp; Payroll · CRM · Inventory) · XianFire Framework</p>
+  </div>
+  <div class="flex items-center justify-center bg-gradient-to-br from-brand-50 via-white to-brand-50 px-4 py-10">
+    <div class="w-full {{#if wide}}max-w-lg{{else}}max-w-md{{/if}} rounded-3xl border border-slate-200/80 bg-white p-7 shadow-xl shadow-brand-900/10 sm:p-9">
+      <div class="mb-5 flex justify-center lg:hidden"><img src="/images/logo-full.png" alt="JOHNVIVZ" class="h-16 w-auto"></div>

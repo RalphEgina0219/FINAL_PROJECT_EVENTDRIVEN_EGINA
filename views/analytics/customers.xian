@@ -1,0 +1,21 @@
+{{> layout_top}}
+{{> area_tabs}}
+{{> analytics_filter}}
+<div class="mb-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
+  {{> stat label="Customers who bought" value=d.buyers href="/crm/customers"}}
+  {{> stat label="Repeat customer rate" value=d.repeatRate href="/crm/analytics/customers" hint=(concat d.repeat " bought more than once (percent)")}}
+  {{> stat label="Loyalty members" value=d.loyaltyMembers href="/crm/loyalty" hint=(concat d.loyaltyPoints " points outstanding")}}
+  {{> stat label="Customers with cases" value=d.withCases href="/crm/cases" hint=(concat d.openCases " case(s) still open")}}
+</div>
+<form method="POST" action="/crm/analytics/customers/segments" class="mb-3 text-right"><input type="hidden" name="_csrf" value="{{csrfToken}}"><button class="rounded border border-slate-300 bg-white px-3 py-1.5 text-xs hover:bg-slate-50">Recompute segments now</button></form>
+{{> charts blocks=blocks}}
+<section class="mt-6 rounded-xl border border-slate-200 bg-white shadow-sm">
+  <h2 class="border-b border-slate-100 px-4 py-3 font-semibold text-slate-900">Top customers by spend in the period</h2>
+  {{#if d.top.length}}
+  <div class="overflow-x-auto"><table class="stack min-w-full text-sm">
+    <thead class="bg-slate-50 text-left text-xs font-medium uppercase tracking-wide text-slate-500"><tr><th class="px-4 py-2">Customer</th><th class="px-4 py-2 text-right">Purchases</th><th class="px-4 py-2 text-right">Spent</th><th class="px-4 py-2 text-right">Purchases so far</th></tr></thead>
+    <tbody class="divide-y divide-slate-100">{{#each d.top}}<tr><td class="px-4 py-2">{{name}}<p class="font-mono text-xs text-slate-500">{{customer_no}}</p></td><td class="px-4 py-2 text-right tabular-nums">{{purchases}}</td><td class="px-4 py-2 text-right tabular-nums">{{peso spent}}</td><td class="px-4 py-2 text-right tabular-nums">{{lifetime}}</td></tr>{{/each}}</tbody>
+  </table></div>
+  {{else}}<p class="px-6 py-8 text-center text-sm text-slate-500">No completed sales in this period.</p>{{/if}}
+</section>
+{{> layout_bottom}}

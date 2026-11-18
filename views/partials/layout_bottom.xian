@@ -1,0 +1,20 @@
+    </main>
+    <footer class="border-t border-slate-200 px-6 py-4 text-center text-xs text-slate-500">
+      &copy; {{year}} JOHNVIVZ CRM · part of the JOHNVIVZ ecosystem (HR · Accounting &amp; Payroll · CRM · Inventory) · Built with XianFire Framework
+    </footer>
+  </div>
+</div>
+{{> stack_table}}
+<script>
+  (function () {
+    var sb = document.getElementById('sidebar'), bd = document.getElementById('sidebar-backdrop');
+    function toggle(open) { sb.classList.toggle('-translate-x-full', !open); bd.classList.toggle('hidden', !open); }
+    document.getElementById('sidebar-toggle').addEventListener('click', function () { toggle(true); });
+    bd.addEventListener('click', function () { toggle(false); });
+    var menu = document.getElementById('user-menu');
+    document.addEventListener('click', function (e) { if (menu && menu.open && !menu.contains(e.target)) menu.open = false; });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && menu) menu.open = false; });
+  })();
+</script>
+</body>
+</html>

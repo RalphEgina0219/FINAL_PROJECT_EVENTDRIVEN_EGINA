@@ -1,0 +1,282 @@
+{{> layout_top}}
+<a href="{{base}}" class="mb-4 inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-700">{{icon "arrow-left" "h-4 w-4"}} Back to cases</a>
+
+<div class="mb-6 rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+  <div class="flex flex-wrap items-center gap-2 text-sm"><span class="font-mono font-semibold text-slate-700">{{k.case_no}}</span>{{statusBadge k.status}}{{priorityBadge k.priority}}{{#if (eq k.status "escalated")}}<span class="rounded-full bg-rose-50 px-2 py-0.5 text-xs font-medium text-rose-700 ring-1 ring-inset ring-rose-600/20">Level {{k.escalation_level}}: {{levelLabel k.escalation_level}}</span>{{/if}}{{#if k.is_overdue}}{{overdueBadge}}{{/if}}{{#if k.is_demo}}{{demoBadge}}{{/if}}</div>
+  <h2 class="mt-2 text-xl font-semibold text-slate-900">{{k.subject}}</h2>
+  <p class="mt-1 text-sm text-slate-500">{{caseTypeLabel k.case_type}} · {{k.category_name}} · Submitted {{formatDateTime k.created_at}}{{#if isStaff}} by {{k.customer_name}} ({{k.customer_no}}){{/if}}</p>
+  <p class="mt-2 text-xs text-slate-500">{{statusHint k.status}}</p>
+</div>
+
+<div class="grid gap-6 xl:grid-cols-3">
+  <div class="space-y-6 xl:col-span-2">
+    <section class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+      <h3 class="mb-2 font-semibold">Customer concern</h3>
+      <p class="whitespace-pre-line text-sm leading-relaxed text-slate-700">{{k.description}}</p>
+      {{#if attachments.length}}
+      <div class="mt-4 border-t border-slate-100 pt-3"><p class="mb-2 text-xs font-medium uppercase text-slate-500">Attachments</p>
+        <ul class="space-y-1 text-sm">{{#each attachments}}<li><a href="/attachments/{{id}}" target="_blank" rel="noopener" class="inline-flex items-center gap-1 text-violet-700 hover:underline">{{icon "paperclip" "h-4 w-4"}}{{original_name}}</a> <span class="text-xs text-slate-400">{{fileSize size_bytes}}</span></li>{{/each}}</ul></div>
+      {{/if}}
+    </section>
+
+    <section id="conversation" class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+      <h3 class="mb-4 font-semibold">Conversation</h3>
+      {{#if thread.length}}
+      <ol class="space-y-4">
+        {{#each thread}}
+        <li class="flex gap-3 {{#if mine}}flex-row-reverse{{/if}}">
+          <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold {{#if isStaffAuthor}}bg-slate-800 text-white{{else}}bg-violet-100 text-violet-800{{/if}}">{{initials author_name}}</span>
+          <div class="max-w-[85%] rounded-xl px-4 py-3 text-sm {{#if (eq visibility "internal")}}border border-dashed border-amber-300 bg-amber-50{{else}}{{#if mine}}bg-violet-50{{else}}bg-slate-50{{/if}}{{/if}}">
+            <p class="mb-1 text-xs text-slate-500"><span class="font-medium text-slate-700">{{author_name}}</span> · {{roleLabel author_role}} · {{formatDateTime created_at}}{{#if (eq visibility "internal")}} · <span class="font-semibold text-amber-800">{{icon "lock" "inline h-3 w-3"}} Internal note (staff only)</span>{{/if}}</p>
+            <p class="whitespace-pre-line text-slate-800">{{body}}</p>
+            {{#if files.length}}<ul class="mt-2 space-y-0.5 border-t border-slate-200 pt-2">{{#each files}}<li><a href="/attachments/{{id}}" target="_blank" rel="noopener" class="inline-flex items-center gap-1 text-xs text-violet-700 hover:underline">{{icon "paperclip" "h-3.5 w-3.5"}}{{original_name}}</a> <span class="text-[11px] text-slate-400">{{fileSize size_bytes}}</span></li>{{/each}}</ul>{{/if}}
+          </div>
+        </li>
+        {{/each}}
+      </ol>
+      {{else}}<p class="text-sm text-slate-500">No replies yet.</p>{{/if}}
+
+      {{#if (or canReply canInternalNote)}}
+      <form method="POST" action="{{base}}/{{k.id}}/comments" enctype="multipart/form-data" class="mt-5 border-t border-slate-100 pt-4">
+        <input type="hidden" name="_csrf" value="{{csrfToken}}">
+        {{#if templates.length}}
+        <div class="mb-2 flex flex-wrap items-center gap-2">
+          <label for="template-picker" class="text-xs font-medium text-slate-500">Response template</label>
+          <select id="template-picker" class="min-w-0 flex-1 rounded-lg border border-slate-300 px-2 py-1.5 text-sm">
+            <option value="">Insert a template…</option>
+            {{#each templates}}<option value="{{id}}" data-body="{{filled}}">{{title}}</option>{{/each}}
+          </select>
+        </div>
+        {{/if}}
+        <label for="message" class="sr-only">Message</label>
+        <textarea id="message" name="message" rows="4" required maxlength="5000" placeholder="{{#if isCustomer}}Write a reply to customer service…{{else}}{{#if canReply}}Write a reply to the customer…{{else}}Internal note for the team (the customer will not see it)…{{/if}}{{/if}}" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"></textarea>
+        <input type="file" name="attachments" multiple accept=".jpg,.jpeg,.png,.pdf,.docx" aria-label="Attach files" class="mt-2 block w-full text-xs file:mr-3 file:rounded-lg file:border-0 file:bg-slate-100 file:px-3 file:py-1.5 file:text-xs hover:file:bg-slate-200">
+        <p class="mt-1 text-[11px] text-slate-400">Optional: up to {{maxFiles}} files · JPG, PNG, PDF, DOCX · 5 MB each</p>
+        <div class="mt-2 flex flex-wrap items-center justify-between gap-2">
+          {{#if canInternalNote}}{{#if canReply}}<label class="flex items-center gap-2 text-sm text-amber-800"><input type="checkbox" name="internal" value="1" class="rounded border-slate-300"> Internal note (hidden from customer)</label>{{else}}<input type="hidden" name="internal" value="1"><span class="text-sm text-amber-800">Internal note only while a supervisor handles this escalation.</span>{{/if}}{{else}}<span></span>{{/if}}
+          <button class="rounded-lg bg-violet-700 px-4 py-2 text-sm font-medium text-white hover:bg-violet-800">Send</button>
+        </div>
+      </form>
+      {{#if templates.length}}
+      <script>
+        document.getElementById('template-picker').addEventListener('change', function (e) {
+          var opt = e.target.selectedOptions[0]; if (!opt || !opt.dataset.body) return;
+          var box = document.getElementById('message');
+          box.value = box.value ? box.value + '\n\n' + opt.dataset.body : opt.dataset.body; box.focus(); e.target.value = '';
+        });
+      </script>
+      {{/if}}
+      {{else}}
+        {{#if (eq k.status "closed")}}<p class="mt-4 rounded-lg bg-slate-50 px-3 py-2 text-sm text-slate-500">This case is closed.</p>{{/if}}
+      {{/if}}
+    </section>
+
+    {{#if isStaff}}
+    {{#if escalations.length}}
+    <section class="rounded-xl border border-rose-200 bg-white p-5 shadow-sm">
+      <h3 class="mb-3 font-semibold">Escalation chain</h3>
+      <ol class="space-y-3 text-sm">
+        {{#each escalations}}
+        <li class="rounded-lg border border-slate-100 bg-slate-50 px-3 py-2">
+          <p><strong>{{levelLabel from_level}} → {{levelLabel to_level}}</strong> by {{escalated_by_name}} ({{roleLabel escalated_by_role}}){{#if escalated_to_name}} to {{escalated_to_name}}{{/if}} · {{formatDateTime created_at}}</p>
+          <p class="text-slate-600">Reason: “{{reason}}”</p>
+          <p class="text-xs text-slate-500">Outcome: {{outcome}}{{#if handled_by_name}} · {{handled_by_name}} · {{formatDateTime handled_at}}{{/if}}{{#if handling_note}} · “{{handling_note}}”{{/if}}</p>
+        </li>
+        {{/each}}
+      </ol>
+    </section>
+    {{/if}}
+    <section class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+      <h3 class="mb-3 font-semibold">History</h3>
+      <ol class="relative space-y-3 border-l border-slate-200 pl-4 text-sm">
+        {{#each history}}
+        <li><span class="absolute -left-1.5 mt-1.5 h-3 w-3 rounded-full border-2 border-white bg-violet-500"></span>
+          <p class="text-slate-800">{{#if (eq field "created")}}Case submitted{{else}}{{historyFieldLabel field}}: <span class="text-slate-500">{{historyValue field old_value}}</span> → <strong>{{historyValue field new_value}}</strong>{{/if}}</p>
+          <p class="text-xs text-slate-500">{{#if changed_by_name}}{{changed_by_name}} ({{roleLabel changed_by_role}}){{else}}System{{/if}} · {{formatDateTime created_at}}{{#if note}} · “{{note}}”{{/if}}</p></li>
+        {{/each}}
+      </ol>
+    </section>
+    {{/if}}
+  </div>
+
+  <aside class="space-y-6">
+    <section class="rounded-xl border border-slate-200 bg-white p-5 text-sm shadow-sm">
+      <h3 class="mb-3 font-semibold">Details</h3>
+      <dl class="space-y-2">
+        <div class="flex justify-between gap-2"><dt class="text-slate-500">Status</dt><dd>{{statusBadge k.status}}</dd></div>
+        <div class="flex justify-between gap-2"><dt class="text-slate-500">Priority</dt><dd>{{priorityBadge k.priority}}</dd></div>
+        <div class="flex justify-between gap-2"><dt class="text-slate-500">Assigned agent</dt><dd class="text-right">{{#if k.agent_name}}{{k.agent_name}}{{else}}<span class="text-amber-700">Not yet assigned</span>{{/if}}</dd></div>
+        {{#if isStaff}}<div class="flex justify-between gap-2"><dt class="text-slate-500">Team</dt><dd class="text-right">{{#if k.team_name}}{{k.team_name}}{{else}}<span class="text-amber-700">Unrouted</span>{{/if}}</dd></div>{{/if}}
+        <div class="flex justify-between gap-2"><dt class="text-slate-500">Order / receipt</dt><dd>{{#if k.order_reference}}{{k.order_reference}}{{else}}—{{/if}}</dd></div>
+        {{#if isStaff}}
+        <div class="border-t border-slate-100 pt-2"><dt class="text-slate-500">Customer</dt><dd class="font-medium"><a class="text-violet-700 hover:underline" href="/crm/customers/{{k.customer_id}}">{{k.customer_name}}</a> <span class="text-xs text-slate-500">{{k.customer_no}}</span></dd>{{#if k.customer_email}}<dd class="text-slate-500">{{k.customer_email}}</dd>{{/if}}{{#if k.customer_mobile}}<dd class="text-slate-500">{{k.customer_mobile}}</dd>{{/if}}</div>
+        <div class="flex justify-between gap-2 border-t border-slate-100 pt-2"><dt class="text-slate-500">First response due</dt><dd>{{formatDateTime k.first_response_due_at}}</dd></div>
+        <div class="flex justify-between gap-2"><dt class="text-slate-500">First response</dt><dd>{{formatDateTime k.first_response_at}}</dd></div>
+        <div class="flex justify-between gap-2"><dt class="text-slate-500">Resolution due</dt><dd class="{{#if k.is_overdue}}font-semibold text-red-600{{/if}}">{{formatDateTime k.resolution_due_at}}</dd></div>
+        {{/if}}
+        <div class="flex justify-between gap-2"><dt class="text-slate-500">Resolved</dt><dd>{{formatDateTime k.resolved_at}}</dd></div>
+        <div class="flex justify-between gap-2"><dt class="text-slate-500">Closed</dt><dd>{{formatDateTime k.closed_at}}</dd></div>
+        {{#if k.reopen_count}}<div class="flex justify-between gap-2"><dt class="text-slate-500">Times reopened</dt><dd>{{k.reopen_count}}</dd></div>{{/if}}
+      </dl>
+      {{#if readOnlyForAgent}}<p class="mt-3 rounded-lg bg-rose-50 px-3 py-2 text-xs text-rose-800">This case is escalated to level {{k.escalation_level}}. Your supervisor is handling it; you can still add internal notes.</p>{{/if}}
+    </section>
+
+    {{#if canHandleEscalation}}
+    <section class="rounded-xl border border-rose-200 bg-rose-50 p-5 shadow-sm">
+      <h3 class="mb-1 font-semibold text-rose-900">Handle escalation</h3>
+      <p class="mb-3 text-xs text-rose-800">Level {{k.escalation_level}} ({{levelLabel k.escalation_level}}). Choose what happens next.</p>
+      <form method="POST" action="{{base}}/{{k.id}}/escalation" class="space-y-2">
+        <input type="hidden" name="_csrf" value="{{csrfToken}}">
+        <select name="action" required class="w-full rounded-lg border border-rose-300 px-3 py-2 text-sm">
+          <option value="take_over">Take over (In Progress)</option>
+          {{#if k.assigned_agent_id}}<option value="return">Return to the assigned agent</option>{{/if}}
+          <option value="resolve">Resolve now</option>
+        </select>
+        <input name="note" maxlength="255" placeholder="Note (required to resolve)" class="w-full rounded-lg border border-rose-300 px-3 py-2 text-sm">
+        <button class="w-full rounded-lg bg-rose-700 px-4 py-2 text-sm font-medium text-white hover:bg-rose-800">Confirm</button>
+      </form>
+    </section>
+    {{/if}}
+
+    {{#if canChangeStatus}}
+    <section class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+      <h3 class="mb-3 font-semibold">Update status</h3>
+      {{#if statusChoices.length}}
+      <form method="POST" action="{{base}}/{{k.id}}/status" class="space-y-2" id="status-form">
+        <input type="hidden" name="_csrf" value="{{csrfToken}}">
+        <label for="status-select" class="sr-only">New status</label>
+        <select name="status" id="status-select" required class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm">
+          <option value="" disabled selected>Current: {{currentStatusLabel}}</option>
+          {{#each statusChoices}}<option value="{{value}}" data-requires="{{requires}}">{{label}}</option>{{/each}}
+        </select>
+        <label for="status-note" id="status-note-label" class="block text-xs font-medium text-slate-600">Note (optional)</label>
+        <input name="note" id="status-note" maxlength="255" placeholder="Note (optional)" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm">
+        <button class="w-full rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700">Update status</button>
+      </form>
+      <p class="mt-2 text-xs text-slate-500">Only valid next steps are listed. Choosing Escalated sends the case up the chain and needs a reason; Resolved needs a resolution note, which the customer will see.</p>
+      {{#if escalationPanelHint}}<p id="status-hint" class="mt-2 text-xs text-rose-800">{{escalationPanelHint}}</p>{{/if}}
+      <script>
+        (function () {
+          var select = document.getElementById('status-select'), note = document.getElementById('status-note'), label = document.getElementById('status-note-label');
+          var RULES = { reason: 'Reason for escalation', resolution: 'Resolution note' };
+          select.addEventListener('change', function () {
+            var needs = select.selectedOptions[0] && select.selectedOptions[0].dataset.requires;
+            var text = RULES[needs];
+            label.textContent = text ? text + ' (required)' : 'Note (optional)';
+            note.placeholder = text || 'Note (optional)';
+            note.required = Boolean(text);
+            note.minLength = text ? {{minNoteLength}} : 0;
+            if (text) note.focus();
+          });
+        })();
+      </script>
+      {{else}}
+      <p id="status-explanation" class="rounded-lg bg-slate-50 px-3 py-2 text-sm text-slate-600">{{statusExplanation}}</p>
+      {{/if}}
+    </section>
+    {{/if}}
+
+    {{#if canEscalate}}
+    <section class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+      <h3 class="mb-1 font-semibold">Escalate</h3>
+      <p class="mb-3 text-xs text-slate-500">Send this case to {{escalateTarget}}. The reason is recorded in the escalation chain.</p>
+      <form method="POST" action="{{base}}/{{k.id}}/escalate" class="space-y-2" onsubmit="return confirm('Escalate this case?');">
+        <input type="hidden" name="_csrf" value="{{csrfToken}}">
+        <input name="reason" required minlength="5" maxlength="255" placeholder="Reason for escalation" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm">
+        <button class="w-full rounded-lg border border-rose-300 px-4 py-2 text-sm font-medium text-rose-700 hover:bg-rose-50">Escalate case</button>
+      </form>
+    </section>
+    {{/if}}
+
+    {{#if canAssign}}
+    <section class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+      <h3 class="mb-3 font-semibold">{{#if k.agent_name}}Reassign{{else}}Assign{{/if}} agent</h3>
+      {{#if suggested}}
+      <div class="mb-3 rounded-lg bg-violet-50 px-3 py-2 text-xs text-violet-900">
+        <p><strong>Suggested:</strong> {{suggested.name}} — {{suggested.open_in_category}} active in this category, {{suggested.open_total}} active overall.</p>
+        <button type="button" id="use-suggestion" data-agent="{{suggested.id}}" class="mt-1 font-semibold text-violet-700 underline">Use suggestion</button>
+        <span class="text-violet-700/80">(rule: available agent with the fewest active cases in this category)</span>
+      </div>
+      {{/if}}
+      <form method="POST" action="{{base}}/{{k.id}}/assign" class="space-y-2">
+        <input type="hidden" name="_csrf" value="{{csrfToken}}">
+        <select id="agent-select" name="agent_id" required class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"><option value="">Choose an agent</option>{{#each agents}}<option value="{{id}}" {{#if current}}disabled{{/if}}>{{name}} — {{team_name}} · {{active_count}} active{{#unless is_available}} · unavailable{{/unless}}{{#if current}} (current){{/if}}</option>{{/each}}</select>
+        <input name="note" maxlength="255" placeholder="Note (optional)" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm">
+        <button class="w-full rounded-lg bg-violet-700 px-4 py-2 text-sm font-medium text-white hover:bg-violet-800">Confirm assignment</button>
+      </form>
+      {{#if suggested}}<script>document.getElementById('use-suggestion').addEventListener('click', function (e) { document.getElementById('agent-select').value = e.target.dataset.agent; });</script>{{/if}}
+    </section>
+    {{/if}}
+
+    {{#if isStaff}}
+    <section class="rounded-xl border border-slate-200 bg-white p-5 text-sm shadow-sm">
+      <a href="/crm/follow-ups/new?customer_id={{k.customer_id}}&case_no={{k.case_no}}" class="font-medium text-violet-700 hover:underline">Create a follow-up task for this case</a>
+    </section>
+    {{/if}}
+
+    {{#if canChangePriority}}
+    <section class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+      <h3 class="mb-3 font-semibold">Priority</h3>
+      <form method="POST" action="{{base}}/{{k.id}}/priority" class="flex gap-2">
+        <input type="hidden" name="_csrf" value="{{csrfToken}}">
+        <select name="priority" class="min-w-0 flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm">{{#each priorityOptions}}<option value="{{value}}" {{selected ../k.priority value}}>{{label}}</option>{{/each}}</select>
+        <button class="rounded-lg border border-slate-300 px-3 py-2 text-sm hover:bg-slate-50">Save</button>
+      </form>
+    </section>
+    {{/if}}
+
+    {{#if canChangeCategory}}
+    <section class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+      <h3 class="mb-3 font-semibold">Category</h3>
+      <form method="POST" action="{{base}}/{{k.id}}/category" class="flex gap-2">
+        <input type="hidden" name="_csrf" value="{{csrfToken}}">
+        <select name="category_id" class="min-w-0 flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm">{{#each categories}}<option value="{{id}}" {{#if current}}selected{{/if}}>{{name}}</option>{{/each}}</select>
+        <button class="rounded-lg border border-slate-300 px-3 py-2 text-sm hover:bg-slate-50">Save</button>
+      </form>
+    </section>
+    {{/if}}
+
+    {{#if canConfirmClose}}
+    <section class="rounded-xl border border-emerald-200 bg-emerald-50 p-5 shadow-sm">
+      <h3 class="font-semibold text-emerald-900">Problem solved?</h3>
+      <p class="mb-3 text-sm text-emerald-800">Confirm to close the case. If you don't reply, it closes automatically {{autoCloseDays}} day(s) after resolution.</p>
+      <form method="POST" action="{{base}}/{{k.id}}/status" onsubmit="return confirm('Close this case as solved?');">
+        <input type="hidden" name="_csrf" value="{{csrfToken}}"><input type="hidden" name="status" value="closed"><input type="hidden" name="note" value="Customer confirmed the solution">
+        <button class="w-full rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700">Yes, close my case</button>
+      </form>
+    </section>
+    {{/if}}
+
+    {{#if canReopen}}
+    <section class="rounded-xl border border-fuchsia-200 bg-fuchsia-50 p-5 shadow-sm">
+      <h3 class="font-semibold text-fuchsia-900">Not solved?</h3>
+      <p class="mb-3 text-sm text-fuchsia-800">You can reopen this case until {{formatDateTime reopenDeadline}} ({{reopenWindowDays}} days after resolution).</p>
+      <form method="POST" action="{{base}}/{{k.id}}/status" class="space-y-2" onsubmit="return confirm('Reopen this case?');">
+        <input type="hidden" name="_csrf" value="{{csrfToken}}"><input type="hidden" name="status" value="in_progress">
+        <input name="note" required minlength="5" maxlength="255" placeholder="Why are you reopening it?" class="w-full rounded-lg border border-fuchsia-300 px-3 py-2 text-sm">
+        <button class="w-full rounded-lg bg-fuchsia-700 px-4 py-2 text-sm font-medium text-white hover:bg-fuchsia-800">Reopen case</button>
+      </form>
+    </section>
+    {{/if}}
+
+    <section id="feedback" class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+      <h3 class="mb-3 font-semibold">Customer rating</h3>
+      {{#if rating}}
+        {{stars rating.rating}}<p class="mt-2 whitespace-pre-line text-sm text-slate-700">{{#if rating.comment}}“{{rating.comment}}”{{else}}<span class="text-slate-400">No comment.</span>{{/if}}</p><p class="mt-1 text-xs text-slate-500">{{formatDateTime rating.created_at}}</p>
+      {{else}}
+        {{#if canRate}}
+        <form method="POST" action="{{base}}/{{k.id}}/rating" class="space-y-3">
+          <input type="hidden" name="_csrf" value="{{csrfToken}}">
+          <fieldset><legend class="text-sm text-slate-600">How satisfied are you with our service?</legend>
+            <div class="mt-2 flex flex-row-reverse justify-end gap-1">
+              {{#each (array 5 4 3 2 1)}}<input type="radio" id="r{{this}}" name="rating" value="{{this}}" required class="peer sr-only"><label for="r{{this}}" title="{{this}} star(s)" class="cursor-pointer text-3xl text-slate-300 hover:text-amber-400 peer-hover:text-amber-400 peer-checked:text-amber-400">★</label>{{/each}}
+            </div></fieldset>
+          <textarea name="comment" rows="3" maxlength="1000" placeholder="Comment (optional)" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"></textarea>
+          <button class="w-full rounded-lg bg-amber-500 px-4 py-2 text-sm font-medium text-white hover:bg-amber-600">Submit rating</button>
+        </form>
+        {{else}}<p class="text-sm text-slate-500">{{#if isCustomer}}You can rate our service once this case is resolved.{{else}}No rating yet.{{/if}}</p>{{/if}}
+      {{/if}}
+    </section>
+  </aside>
+</div>
+{{> layout_bottom}}

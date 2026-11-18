@@ -1,0 +1,17 @@
+    </div>
+  </div>
+</div>
+<script>
+  // Show / hide password buttons (.jvz-toggle sits next to its input).
+  document.querySelectorAll('.jvz-toggle').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var input = b.parentElement.querySelector('input');
+      var show = input.type === 'password';
+      input.type = show ? 'text' : 'password';
+      b.setAttribute('aria-label', show ? 'Hide password' : 'Show password');
+      b.setAttribute('aria-pressed', show ? 'true' : 'false');
+    });
+  });
+</script>
+</body>
+</html>

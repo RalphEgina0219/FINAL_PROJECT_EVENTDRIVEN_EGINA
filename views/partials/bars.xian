@@ -1,0 +1,10 @@
+{{#if rows.length}}
+<ul class="space-y-3">
+  {{#each rows}}
+  <li title="{{#if label}}{{label}}{{else if name}}{{name}}{{else}}{{priorityLabel priority}}{{/if}}: {{total}} case(s)">
+    <div class="flex justify-between gap-2 text-sm"><span class="truncate text-slate-700">{{#if label}}{{label}}{{else if name}}{{name}}{{else}}{{priorityLabel priority}}{{/if}}</span><span class="font-medium tabular-nums text-slate-900">{{total}}</span></div>
+    <div class="mt-1 h-2 rounded-full bg-slate-100"><div class="h-2 rounded-full bg-violet-500" style="width: {{barWidth total ../max}}%"></div></div>
+  </li>
+  {{/each}}
+</ul>
+{{else}}<p class="py-6 text-center text-sm text-slate-500">No data yet.</p>{{/if}}

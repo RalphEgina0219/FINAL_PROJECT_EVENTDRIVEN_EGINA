@@ -1,0 +1,42 @@
+{{> layout_top}}
+{{> settings_tabs}}
+<div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+  <section class="rounded-xl border border-slate-200 bg-white shadow-sm lg:col-span-2">
+    <div class="overflow-x-auto"><table class="stack min-w-full text-sm">
+      <thead class="bg-slate-50 text-left text-xs font-medium uppercase tracking-wide text-slate-500"><tr><th class="px-4 py-2">Category</th><th class="px-4 py-2">Default priority</th><th class="px-4 py-2 text-right">Cases</th><th class="px-4 py-2">Status</th><th class="px-4 py-2">Actions</th></tr></thead>
+      <tbody class="divide-y divide-slate-100">
+      {{#each rows}}
+        {{#if editing}}
+        <tr class="bg-violet-50/50"><td colspan="5" class="px-4 py-3">
+          <form method="POST" action="{{../cfg.categories}}/{{id}}" class="grid grid-cols-1 gap-2 sm:grid-cols-4">
+            <input type="hidden" name="_csrf" value="{{../csrfToken}}">
+            <input name="name" value="{{name}}" required minlength="3" maxlength="80" aria-label="Name" class="rounded-lg border border-slate-300 px-3 py-2">
+            <input name="description" value="{{description}}" maxlength="255" aria-label="Description" class="rounded-lg border border-slate-300 px-3 py-2 sm:col-span-2">
+            <select name="default_priority" aria-label="Default priority" class="rounded-lg border border-slate-300 px-2 py-2">{{#each ../priorities}}<option value="{{this}}" {{selected ../default_priority this}}>{{priorityLabel this}}</option>{{/each}}</select>
+            <div class="flex gap-2 sm:col-span-4"><button class="rounded-lg bg-violet-700 px-4 py-2 text-white hover:bg-violet-800">Save</button><a href="{{../cfg.categories}}" class="rounded-lg border border-slate-300 px-4 py-2 hover:bg-white">Cancel</a></div>
+          </form></td></tr>
+        {{else}}
+        <tr><td class="px-4 py-3"><span class="font-medium">{{name}}</span><p class="text-xs text-slate-500">{{description}}</p></td>
+          <td class="px-4 py-3">{{priorityBadge default_priority}}</td>
+          <td class="px-4 py-3 text-right tabular-nums">{{case_count}}</td>
+          <td class="px-4 py-3">{{#if is_active}}<span class="text-emerald-700">Active</span>{{else}}<span class="text-slate-400">Inactive</span>{{/if}}</td>
+          <td class="whitespace-nowrap px-4 py-3"><div class="flex flex-wrap gap-2">
+            <a href="{{../cfg.categories}}?edit={{id}}" class="rounded border border-slate-300 px-2 py-1 text-xs hover:bg-slate-50">Edit</a>
+            <form method="POST" action="{{../cfg.categories}}/{{id}}/toggle"><input type="hidden" name="_csrf" value="{{../csrfToken}}"><button class="rounded border border-slate-300 px-2 py-1 text-xs hover:bg-slate-50">{{#if is_active}}Deactivate{{else}}Activate{{/if}}</button></form>
+            {{#unless case_count}}<form method="POST" action="{{../cfg.categories}}/{{id}}/delete" onsubmit="return confirm('Delete this category?');"><input type="hidden" name="_csrf" value="{{../csrfToken}}"><button class="rounded border border-red-200 px-2 py-1 text-xs text-red-700 hover:bg-red-50">Delete</button></form>{{/unless}}
+          </div></td></tr>
+        {{/if}}
+      {{/each}}
+      </tbody></table></div>
+  </section>
+  <form method="POST" action="{{cfg.categories}}" class="space-y-3 self-start rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+    <input type="hidden" name="_csrf" value="{{csrfToken}}">
+    <h2 class="font-semibold">Add category</h2>
+    <input name="name" required minlength="3" maxlength="80" placeholder="Name" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm">
+    <input name="description" maxlength="255" placeholder="Description (optional)" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm">
+    <select name="default_priority" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm">{{#each priorities}}<option value="{{this}}" {{selected "medium" this}}>{{priorityLabel this}}</option>{{/each}}</select>
+    <button class="w-full rounded-lg bg-violet-700 px-4 py-2 text-sm font-medium text-white hover:bg-violet-800">Add category</button>
+    <p class="text-xs text-slate-500">Categories used by cases cannot be deleted; deactivate them instead.</p>
+  </form>
+</div>
+{{> layout_bottom}}

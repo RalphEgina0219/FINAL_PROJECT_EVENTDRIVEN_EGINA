@@ -1,0 +1,12 @@
+{{> layout_top}}
+<p class="mb-4 text-sm text-slate-500">New cases waiting for an agent: your team's unassigned cases and new unrouted cases from the customer portal (oldest first). Open a case to assign it to an agent of your team.</p>
+<section class="rounded-xl border border-slate-200 bg-white shadow-sm">
+  {{> case_table cases=cases base=base showCustomer=true showAgent=true emptyText="The queue is empty. Every case has an agent."}}
+</section>
+<section class="mt-6 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+  <h2 class="mb-2 font-semibold">Agents you can assign</h2>
+  <ul class="grid gap-2 text-sm sm:grid-cols-2 lg:grid-cols-3">
+    {{#each agents}}<li class="rounded-lg border border-slate-100 px-3 py-2"><span class="font-medium">{{name}}</span> <span class="text-xs text-slate-500">{{active_count}} active{{#unless is_available}} · unavailable{{/unless}}</span></li>{{else}}<li class="text-slate-500">No active agents in your team.</li>{{/each}}
+  </ul>
+</section>
+{{> layout_bottom}}

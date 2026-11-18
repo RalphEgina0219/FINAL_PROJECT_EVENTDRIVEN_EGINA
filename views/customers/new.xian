@@ -1,0 +1,60 @@
+{{> layout_top}}
+<a href="/crm/customers" class="mb-4 inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-700">{{icon "arrow-left" "h-4 w-4"}} Back to customers</a>
+{{#if errors.length}}<div class="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800" role="alert"><ul class="list-disc pl-5">{{#each errors}}<li>{{this}}</li>{{/each}}</ul></div>{{/if}}
+
+{{#if duplicates.length}}
+<section class="mb-6 rounded-xl border border-amber-300 bg-amber-50 p-5 shadow-sm" aria-label="Possible duplicates" id="duplicate-warning">
+  <h2 class="font-semibold text-amber-900">Possible duplicate: this customer may already exist</h2>
+  <p class="mt-1 text-sm text-amber-900">Nothing has been saved yet. Open the existing customer, or confirm below with a reason that this is a different person. The warning and your reason are recorded in the audit log.</p>
+  <ul class="mt-3 space-y-2">
+    {{#each duplicates}}
+    <li class="rounded-lg border border-amber-200 bg-white px-3 py-2 text-sm">
+      <p class="font-medium text-slate-800">{{name}} <span class="font-mono text-xs text-slate-500">{{customer_no}}</span></p>
+      <p class="text-xs text-slate-500">{{email_masked}} · {{mobile_masked}} · created {{formatDate created_at}}</p>
+      <p class="mt-1 text-xs font-medium text-amber-800">{{#each reasons}}{{this}}{{#unless @last}} · {{/unless}}{{/each}}</p>
+      <p class="mt-1 text-sm">{{#if in_scope}}<a class="font-medium text-violet-700 hover:underline" href="/crm/customers/{{id}}">Use this existing customer</a>{{else}}<span class="text-slate-600">This customer is not in your scope. Ask your Team Leader to assign them to you.</span>{{/if}}</p>
+    </li>
+    {{/each}}
+  </ul>
+</section>
+{{/if}}
+
+<form method="POST" action="/crm/customers/new" class="grid max-w-3xl grid-cols-1 gap-4 rounded-xl border border-slate-200 bg-white p-5 shadow-sm sm:grid-cols-2">
+  <input type="hidden" name="_csrf" value="{{csrfToken}}">
+  <h2 class="font-semibold sm:col-span-2">Customer details</h2>
+  <div><label class="text-sm font-medium text-slate-700" for="first_name">First name</label><input id="first_name" name="first_name" value="{{form.first_name}}" required minlength="2" maxlength="80" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"></div>
+  <div><label class="text-sm font-medium text-slate-700" for="last_name">Last name</label><input id="last_name" name="last_name" value="{{form.last_name}}" required minlength="2" maxlength="80" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"></div>
+  <div><label class="text-sm font-medium text-slate-700" for="mobile">Mobile</label><input id="mobile" name="mobile" type="tel" value="{{form.mobile}}" maxlength="30" placeholder="0917 123 4567" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"></div>
+  <div><label class="text-sm font-medium text-slate-700" for="email">Email</label><input id="email" name="email" type="email" value="{{form.email}}" maxlength="254" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"></div>
+  <p class="-mt-2 text-xs text-slate-500 sm:col-span-2">Enter a mobile number, an email, or both. The system checks them (and the name plus mobile) against existing customers before saving.</p>
+  <div><label class="text-sm font-medium text-slate-700" for="source">How did they reach us?</label>
+    <select id="source" name="source" required class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm">{{#each sourceOptions}}<option value="{{value}}" {{#if (eq value ../form.source)}}selected{{/if}}>{{label}}</option>{{/each}}</select></div>
+  <div><label class="text-sm font-medium text-slate-700" for="customer_type">Customer type</label>
+    <select id="customer_type" name="customer_type" required class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm">{{#each typeOptions}}<option value="{{value}}" {{#if (eq value ../form.customer_type)}}selected{{/if}}>{{label}}</option>{{/each}}</select></div>
+  <fieldset class="grid grid-cols-1 gap-3 sm:col-span-2 sm:grid-cols-2"><legend class="mb-1 text-sm font-medium text-slate-700">Address (optional)</legend>
+    <input name="address_line1" value="{{form.address_line1}}" maxlength="200" placeholder="House no., street" aria-label="Address line" class="rounded-lg border border-slate-300 px-3 py-2 text-sm sm:col-span-2">
+    <input name="barangay" value="{{form.barangay}}" maxlength="100" placeholder="Barangay" aria-label="Barangay" class="rounded-lg border border-slate-300 px-3 py-2 text-sm">
+    <input name="city_municipality" value="{{form.city_municipality}}" maxlength="100" placeholder="City / municipality" aria-label="City or municipality" class="rounded-lg border border-slate-300 px-3 py-2 text-sm">
+    <input name="province" value="{{form.province}}" maxlength="100" placeholder="Province" aria-label="Province" class="rounded-lg border border-slate-300 px-3 py-2 text-sm">
+  </fieldset>
+  {{#if canPickAgent}}
+  <div class="sm:col-span-2"><label class="text-sm font-medium text-slate-700" for="agent_id">Assign to an agent (optional)</label>
+    <select id="agent_id" name="agent_id" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"><option value="">Not assigned yet</option>{{#each agents}}<option value="{{id}}" {{#if sel}}selected{{/if}}>{{name}} — {{team_name}} · {{active_count}} active</option>{{/each}}</select></div>
+  {{else}}<p class="text-xs text-slate-500 sm:col-span-2">You will be assigned as this customer's agent.</p>{{/if}}
+  <fieldset class="rounded-lg border border-slate-200 bg-slate-50 p-3 sm:col-span-2"><legend class="px-1 text-sm font-medium text-slate-700">Data privacy consent</legend>
+    <label class="flex items-start gap-2 text-sm"><input type="checkbox" name="consent" value="1" required {{#if form.consent}}checked{{/if}} class="mt-0.5 rounded border-slate-300"> The customer agreed to the Data Privacy Notice.</label>
+    <label class="mt-2 block text-xs text-slate-600" for="consent_channel">Consent was given</label>
+    <select id="consent_channel" name="consent_channel" required class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm sm:w-64">{{#each consentOptions}}<option value="{{value}}" {{#if (eq value ../form.consent_channel)}}selected{{/if}}>{{label}}</option>{{/each}}</select>
+  </fieldset>
+  {{#if duplicates.length}}
+  <div class="rounded-lg border border-amber-300 bg-amber-50 p-3 sm:col-span-2">
+    <label class="text-sm font-medium text-amber-900" for="override_reason">Create anyway: why is this a different customer?</label>
+    <input id="override_reason" name="override_reason" value="{{form.override_reason}}" required minlength="{{minReason}}" maxlength="255" placeholder="For example: a family member who shares the same phone" class="mt-1 w-full rounded-lg border border-amber-300 bg-white px-3 py-2 text-sm">
+  </div>
+  {{/if}}
+  <div class="flex flex-wrap gap-2 sm:col-span-2">
+    <button class="rounded-lg bg-violet-700 px-4 py-2 text-sm font-medium text-white hover:bg-violet-800">{{#if duplicates.length}}Create anyway (reason recorded){{else}}Check for duplicates and save{{/if}}</button>
+    <a href="/crm/customers" class="rounded-lg border border-slate-300 px-4 py-2 text-sm hover:bg-slate-50">Cancel</a>
+  </div>
+</form>
+{{> layout_bottom}}

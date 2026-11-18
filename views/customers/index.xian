@@ -1,0 +1,32 @@
+{{> layout_top}}
+<form method="GET" action="/crm/customers" class="mb-4 flex flex-wrap items-end gap-2 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+  <div class="min-w-0 flex-1"><label class="text-xs font-medium text-slate-500" for="q">Search</label><input id="q" name="q" value="{{q}}" placeholder="Name, CUS- number, email or mobile" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"></div>
+  <div><label class="text-xs font-medium text-slate-500" for="assignment">Agent</label>
+    <select id="assignment" name="assignment" class="mt-1 rounded-lg border border-slate-300 px-3 py-2 text-sm"><option value="">All</option><option value="unassigned" {{#if (eq assignment "unassigned")}}selected{{/if}}>No agent assigned</option>{{#unless isSupervisor}}<option value="mine" {{#if (eq assignment "mine")}}selected{{/if}}>Assigned to me</option>{{/unless}}</select></div>
+  <button class="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700">Search</button>
+  {{#if q}}<a href="/crm/customers" class="rounded-lg border border-slate-300 px-4 py-2 text-sm hover:bg-slate-50">Clear</a>{{/if}}
+</form>
+{{#if canCreate}}<div class="mb-3"><a href="/crm/customers/new" class="inline-flex rounded-lg bg-violet-700 px-4 py-2 text-sm font-medium text-white hover:bg-violet-800">Add customer</a></div>{{/if}}
+<p class="mb-2 text-xs text-slate-500">{{icon "lock" "inline h-3.5 w-3.5"}} Email and mobile are masked in this list. Open a customer to see full contact details (the view is recorded in the audit log).{{#unless isManager}} {{#if (eq currentUser.role "team_leader")}}You see your team's customers and customers nobody is assigned to yet.{{else}}You see only customers assigned to you or linked to your cases.{{/if}}{{/unless}}</p>
+<section class="rounded-xl border border-slate-200 bg-white shadow-sm">
+  {{#if rows.length}}
+  <div class="overflow-x-auto"><table class="stack min-w-full text-sm">
+    <thead class="bg-slate-50 text-left text-xs font-medium uppercase tracking-wide text-slate-500"><tr><th class="px-4 py-2">Customer</th><th class="px-4 py-2">Email</th><th class="px-4 py-2">Mobile</th><th class="px-4 py-2">Source</th><th class="px-4 py-2">Agent</th><th class="px-4 py-2">Portal</th><th class="px-4 py-2 text-right">Cases (active)</th></tr></thead>
+    <tbody class="divide-y divide-slate-100">
+    {{#each rows}}
+      <tr class="hover:bg-slate-50">
+        <td class="px-4 py-3"><a href="/crm/customers/{{id}}" class="font-medium text-violet-700 hover:underline">{{first_name}} {{last_name}}</a> {{#if is_demo}}{{demoBadge}}{{/if}}<p class="text-xs text-slate-500">{{customer_no}}</p></td>
+        <td class="px-4 py-3 font-mono text-xs text-slate-600">{{email_masked}}</td>
+        <td class="px-4 py-3 font-mono text-xs text-slate-600">{{mobile_masked}}</td>
+        <td class="px-4 py-3 text-slate-600">{{source_label}}</td>
+        <td class="px-4 py-3 text-slate-600">{{#if assigned_agent}}{{assigned_agent}}{{else}}<span class="text-xs text-amber-700">None</span>{{/if}}</td>
+        <td class="px-4 py-3">{{#if account_status}}<span class="text-xs text-emerald-700">{{account_status}}</span>{{else}}<span class="text-xs text-slate-400">walk-in</span>{{/if}}</td>
+        <td class="px-4 py-3 text-right tabular-nums">{{case_count}} ({{active_count}})</td>
+      </tr>
+    {{/each}}
+    </tbody></table></div>
+  {{else}}<p class="px-6 py-10 text-center text-sm text-slate-500">No customers found.</p>{{/if}}
+  {{> pagination}}
+</section>
+
+{{> layout_bottom}}

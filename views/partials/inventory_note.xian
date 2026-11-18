@@ -1,0 +1,4 @@
+{{#if mockInventory}}<div class="mb-4 flex items-start gap-2 rounded-lg border border-dashed border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900" role="note" data-mock-inventory="1">
+  {{icon "beaker" "h-5 w-5 shrink-0"}}
+  <span><strong>MOCK Inventory</strong> · products, prices and stock on this page come from a mock Inventory (INTEGRATION_INVENTORY_MODE=mock), not from the real JOHNVIVZ Inventory. Orders reserve stock only in the mock; no event is sent to another system.</span>
+</div>{{/if}}

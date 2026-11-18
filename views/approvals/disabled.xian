@@ -1,0 +1,10 @@
+{{> layout_top}}
+{{> settings_tabs}}
+<section class="mx-auto max-w-2xl rounded-xl border border-slate-200 bg-white p-8 text-center shadow-sm" data-approvals-disabled="1">
+  <p class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 text-slate-500">{{icon "lock" "h-6 w-6"}}</p>
+  <h2 class="mt-4 text-lg font-semibold text-slate-900">Approvals are not enabled yet</h2>
+  <p class="mt-2 text-sm font-medium text-slate-800" data-ess-notice="1">Leave, overtime and attendance requests are filed in ESS (Accounting app). Your Team Leader gives the first approval and Accounting/Payroll gives the final approval, both in ESS.</p>
+  <p class="mt-2 text-sm text-slate-600">CRM does not receive, route or send any of these requests while this feature is off.</p>
+  <p class="mt-4 text-xs text-slate-500">To turn the feature on, set <span class="font-mono">APPROVALS_ENABLED=true</span> in <span class="font-mono">.env</span> and restart. Requests HR sends while it is off are kept in the Integration Health inbox as "ignored" and can be reprocessed afterwards.</p>
+</section>
+{{> layout_bottom}}

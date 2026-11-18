@@ -1,0 +1,6 @@
+{{#if summary.demo_count}}
+<div class="mb-6 flex items-start gap-2 rounded-lg border border-dashed border-sky-300 bg-sky-50 px-4 py-3 text-sm text-sky-800">
+  {{icon "beaker" "h-5 w-5 shrink-0"}}
+  <span>All figures are computed live from the database. <strong>{{summary.demo_count}} of {{summary.total}}</strong> cases are demo records created by the demo seeder (marked {{demoBadge}}); {{summary.real_count}} are real records.</span>
+</div>
+{{/if}}

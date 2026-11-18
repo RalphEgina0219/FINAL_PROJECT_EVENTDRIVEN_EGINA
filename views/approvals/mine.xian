@@ -1,0 +1,23 @@
+{{> layout_top}}
+<p class="mb-4 flex items-start gap-2 rounded-lg border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-900" role="note" data-my-requests-note="1">{{icon "lock" "mt-0.5 h-4 w-4 shrink-0"}}<span><strong>Requests are filed and owned in ESS/HR. This is a copy for your reference.</strong> To file, change or cancel a leave, attendance correction or overtime request, use ESS.</span></p>
+<section class="rounded-xl border border-slate-200 bg-white shadow-sm">
+  {{#if rows.length}}
+  <div class="overflow-x-auto"><table class="stack min-w-full text-sm">
+    <thead class="bg-slate-50 text-left text-xs font-medium uppercase tracking-wide text-slate-500"><tr><th class="px-4 py-2">Request</th><th class="px-4 py-2">Type</th><th class="px-4 py-2">Dates</th><th class="px-4 py-2">Status</th><th class="px-4 py-2">Decided by</th><th class="px-4 py-2">When</th><th class="px-4 py-2">Comment</th></tr></thead>
+    <tbody class="divide-y divide-slate-100 align-top">
+    {{#each rows}}
+      <tr data-request="{{request_id}}" data-status="{{status}}">
+        <td class="px-4 py-3"><a href="/crm/my-requests/{{id}}" class="font-mono text-xs font-medium text-violet-700 hover:underline">{{request_id}}</a><p class="text-xs text-slate-500">{{summary}}</p></td>
+        <td class="px-4 py-3">{{type_label}}</td>
+        <td class="whitespace-nowrap px-4 py-3 text-xs">{{dates}}</td>
+        <td class="px-4 py-3">{{approvalBadge status}}</td>
+        <td class="px-4 py-3 text-xs">{{#if decided_by_name}}{{decided_by_name}}{{else}}<span class="text-slate-400">—</span>{{/if}}</td>
+        <td class="whitespace-nowrap px-4 py-3 text-xs text-slate-500">{{#if decided_at}}{{formatDateTime decided_at}}{{else}}—{{/if}}</td>
+        <td class="max-w-xs px-4 py-3 text-xs text-slate-600">{{decision_reason}}</td>
+      </tr>
+    {{/each}}
+    </tbody></table></div>
+  {{else}}<p class="px-6 py-10 text-center text-sm text-slate-500">You have no requests in CRM yet. Requests you file in ESS appear here once HR sends them.</p>{{/if}}
+  {{> pagination}}
+</section>
+{{> layout_bottom}}

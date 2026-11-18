@@ -1,0 +1,27 @@
+{{> layout_top}}
+{{> area_tabs}}
+<div class="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900" role="note">
+  <strong>Every forecast is an Estimate.</strong> Statistical methods only (no AI): a 7-day moving average, a straight-line trend over 28 days, and "same weekday last week". Each time, the method that would have been closest over the last 7 known days is used (lowest MAE). The method, the input period ({{inputDays}} days), the horizon ({{horizon}} days) and the error are stored with every run and shown below.
+</div>
+<form method="POST" action="/crm/analytics/forecasts/generate" class="mb-6 flex flex-wrap items-center gap-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+  <input type="hidden" name="_csrf" value="{{csrfToken}}">
+  <button class="rounded-lg bg-violet-700 px-4 py-2 text-sm font-medium text-white hover:bg-violet-800">Compute new forecasts</button>
+  <label class="flex items-center gap-2 text-sm text-slate-600"><input type="checkbox" name="include_demo" value="1" class="rounded border-slate-300"> Include demo data (for demonstration only; the result is labelled)</label>
+</form>
+{{#each sections}}
+<section class="mb-6" data-forecast="{{metric}}">
+  <h2 class="mb-2 font-semibold text-slate-900">{{label}} <span class="ml-1 rounded bg-amber-200 px-1.5 py-0.5 text-xs font-semibold uppercase text-amber-900">Estimate</span></h2>
+  {{#if run}}
+  <p class="mb-3 text-xs text-slate-600" data-run="{{run.id}}">Method: <strong>{{run.method_label}}</strong> (v{{run.method_version}}) · input {{run.input_from}} to {{run.input_to}} · horizon {{run.horizon_days}} days · back-test {{run.error_metric}} {{fixed run.error_value 2}} · {{run.excluded_note}} · computed {{formatDateTime run.generated_at}}{{#if run.generated_by_name}} by {{run.generated_by_name}}{{/if}}{{#if run.includesDemo}} · <strong class="text-amber-800" data-includes-demo="1">includes demo data</strong>{{/if}}</p>
+  {{> charts blocks=blocks}}
+  <details class="mt-2 rounded-xl border border-slate-200 bg-white text-sm shadow-sm"><summary class="cursor-pointer px-4 py-2 font-medium text-slate-700">Estimate per day, with its range</summary>
+    <div class="overflow-x-auto"><table class="stack min-w-full text-sm"><thead class="bg-slate-50 text-left text-xs uppercase text-slate-500"><tr><th class="px-4 py-2">Day</th><th class="px-4 py-2 text-right">Estimate</th><th class="px-4 py-2 text-right">Range</th></tr></thead>
+    <tbody class="divide-y divide-slate-100">{{#each values}}<tr><td class="px-4 py-2">{{day}}</td><td class="px-4 py-2 text-right tabular-nums">{{estimateText}}</td><td class="px-4 py-2 text-right tabular-nums text-slate-500">{{range}}</td></tr>{{/each}}</tbody></table></div>
+  </details>
+  {{else}}
+  <p class="rounded-xl border border-slate-200 bg-white px-6 py-6 text-center text-sm text-slate-500">No forecast computed yet. Press "Compute new forecasts".</p>
+  {{> charts blocks=blocks}}
+  {{/if}}
+</section>
+{{/each}}
+{{> layout_bottom}}

@@ -1,0 +1,893 @@
+erDiagram
+  crm_users ||--o{ agent_assignments : "agent_id"
+  crm_users ||--o{ agent_assignments : "assigned_by"
+  customers ||--o{ agent_assignments : "customer_id"
+  crm_users ||--o{ approval_requests : "approver_user_id"
+  crm_users ||--o{ approval_requests : "decided_by"
+  crm_users ||--o{ approval_requests : "requester_user_id"
+  customer_cases ||--o{ attachments : "case_id"
+  crm_users ||--o{ attachments : "uploaded_by"
+  crm_users ||--o{ campaigns : "created_by"
+  customer_segments ||--o{ campaigns : "target_segment_id"
+  cart_records ||--o{ cart_items : "cart_id"
+  sales_orders ||--o{ cart_records : "checked_out_order_id"
+  customers ||--o{ cart_records : "customer_id"
+  crm_users ||--o{ case_assignments : "agent_id"
+  crm_users ||--o{ case_assignments : "assigned_by"
+  customer_cases ||--o{ case_assignments : "case_id"
+  crm_teams ||--o{ case_assignments : "team_id"
+  crm_users ||--o{ case_comments : "author_id"
+  customer_cases ||--o{ case_comments : "case_id"
+  customer_cases ||--o{ case_reads : "case_id"
+  crm_users ||--o{ case_reads : "user_id"
+  customer_cases ||--o{ case_status_history : "case_id"
+  crm_users ||--o{ case_status_history : "changed_by"
+  crm_users ||--o{ crm_notifications : "user_id"
+  crm_users ||--o{ crm_settings : "updated_by"
+  crm_users ||--o{ crm_teams : "manager_id"
+  crm_users ||--o{ crm_teams : "team_leader_id"
+  employee_references ||--o{ crm_users : "employee_id"
+  roles ||--o{ crm_users : "role"
+  crm_teams ||--o{ crm_users : "team_id"
+  customers ||--o{ customer_accounts : "customer_id"
+  crm_users ||--o{ customer_accounts : "user_id"
+  customers ||--o{ customer_addresses : "customer_id"
+  crm_users ||--o{ customer_cases : "assigned_agent_id"
+  case_categories ||--o{ customer_cases : "category_id"
+  crm_users ||--o{ customer_cases : "created_by"
+  customers ||--o{ customer_cases : "customer_id"
+  inquiries ||--o{ customer_cases : "inquiry_id"
+  sales_orders ||--o{ customer_cases : "sales_order_id"
+  crm_teams ||--o{ customer_cases : "team_id"
+  customers ||--o{ customer_consents : "customer_id"
+  crm_users ||--o{ customer_consents : "recorded_by"
+  customers ||--o{ customer_contacts : "customer_id"
+  customer_cases ||--o{ customer_feedback : "case_id"
+  customers ||--o{ customer_feedback : "customer_id"
+  customer_ratings ||--o{ customer_feedback : "rating_id"
+  crm_users ||--o{ customer_feedback : "reviewed_by"
+  sales_orders ||--o{ customer_feedback : "sales_order_id"
+  crm_users ||--o{ customer_interactions : "crm_user_id"
+  customers ||--o{ customer_interactions : "customer_id"
+  customers ||--o{ customer_preferences : "customer_id"
+  customer_cases ||--o{ customer_ratings : "case_id"
+  customers ||--o{ customer_ratings : "customer_id"
+  sales_orders ||--o{ customer_ratings : "sales_order_id"
+  crm_users ||--o{ customers : "created_by"
+  customers ||--o{ customers : "merged_into_id"
+  customer_segments ||--o{ customers : "segment_id"
+  crm_users ||--o{ email_verification_tokens : "user_id"
+  crm_users ||--o{ follow_up_tasks : "assigned_to"
+  customer_cases ||--o{ follow_up_tasks : "case_id"
+  crm_users ||--o{ follow_up_tasks : "created_by"
+  customers ||--o{ follow_up_tasks : "customer_id"
+  sales_orders ||--o{ follow_up_tasks : "sales_order_id"
+  crm_users ||--o{ forecast_runs : "generated_by"
+  forecast_runs ||--o{ forecast_values : "forecast_run_id"
+  customer_cases ||--o{ inquiries : "converted_case_id"
+  crm_users ||--o{ inquiries : "created_by"
+  customers ||--o{ inquiries : "customer_id"
+  crm_users ||--o{ inquiries : "handled_by"
+  customers ||--o{ loyalty_accounts : "customer_id"
+  loyalty_accounts ||--o{ loyalty_redemptions : "loyalty_account_id"
+  loyalty_transactions ||--o{ loyalty_redemptions : "redeem_transaction_id"
+  loyalty_transactions ||--o{ loyalty_redemptions : "return_transaction_id"
+  sales_orders ||--o{ loyalty_redemptions : "sales_order_id"
+  crm_users ||--o{ loyalty_transactions : "created_by"
+  loyalty_accounts ||--o{ loyalty_transactions : "loyalty_account_id"
+  refunds ||--o{ loyalty_transactions : "refund_id"
+  sales_transactions ||--o{ loyalty_transactions : "sales_transaction_id"
+  crm_users ||--o{ mail_outbox : "user_id"
+  crm_users ||--o{ password_reset_tokens : "user_id"
+  crm_users ||--o{ payment_references : "recorded_by"
+  sales_orders ||--o{ payment_references : "sales_order_id"
+  customers ||--o{ promotion_redemptions : "customer_id"
+  promotions ||--o{ promotion_redemptions : "promotion_id"
+  sales_orders ||--o{ promotion_redemptions : "sales_order_id"
+  crm_users ||--o{ promotions : "approved_by"
+  campaigns ||--o{ promotions : "campaign_id"
+  crm_users ||--o{ promotions : "created_by"
+  crm_users ||--o{ refunds : "approved_by"
+  customer_cases ||--o{ refunds : "case_id"
+  crm_users ||--o{ refunds : "requested_by"
+  sales_transactions ||--o{ refunds : "sales_transaction_id"
+  case_categories ||--o{ response_templates : "category_id"
+  crm_users ||--o{ response_templates : "created_by"
+  permissions ||--o{ role_permissions : "permission_id"
+  roles ||--o{ role_permissions : "role_id"
+  discounts ||--o{ sales_order_items : "discount_id"
+  promotions ||--o{ sales_order_items : "promotion_id"
+  sales_orders ||--o{ sales_order_items : "sales_order_id"
+  crm_users ||--o{ sales_orders : "agent_id"
+  crm_users ||--o{ sales_orders : "created_by"
+  customers ||--o{ sales_orders : "customer_id"
+  customer_addresses ||--o{ sales_orders : "delivery_address_id"
+  crm_teams ||--o{ sales_orders : "team_id"
+  customers ||--o{ sales_transactions : "customer_id"
+  sales_orders ||--o{ sales_transactions : "sales_order_id"
+  crm_teams ||--o{ service_targets : "team_id"
+  crm_users ||--o{ service_targets : "updated_by"
+  customer_cases ||--o{ ticket_escalations : "case_id"
+  crm_users ||--o{ ticket_escalations : "escalated_by"
+  crm_users ||--o{ ticket_escalations : "escalated_to"
+  crm_users ||--o{ ticket_escalations : "handled_by"
+  agent_assignments {
+    int id PK
+    int customer_id FK
+    int agent_id FK
+    int assigned_by FK
+    datetime assigned_at
+    datetime ended_at
+    varchar note
+  }
+  approval_requests {
+    int id PK
+    varchar request_id UK
+    enum request_type
+    varchar requester_employee_id
+    int requester_user_id FK
+    int approver_user_id FK
+    varchar approver_role
+    enum status
+    varchar exception_reason
+    varchar summary
+    json payload
+    int decided_by FK
+    datetime decided_at
+    varchar decision_reason
+    char source_event_id
+    char decision_event_id
+    tinyint is_mock
+    datetime received_at
+    datetime created_at
+    datetime updated_at
+  }
+  attachments {
+    int id PK
+    enum entity_type
+    int entity_id
+    int case_id FK
+    int uploaded_by FK
+    varchar original_name
+    varchar stored_name UK
+    varchar mime_type
+    int size_bytes
+    enum visibility
+    datetime created_at
+  }
+  campaigns {
+    int id PK
+    varchar campaign_code UK
+    varchar name
+    text description
+    enum channel
+    int target_segment_id FK
+    date start_date
+    date end_date
+    enum status
+    int created_by FK
+    tinyint is_demo
+    datetime created_at
+    datetime updated_at
+  }
+  cart_items {
+    int id PK
+    int cart_id FK
+    varchar product_id
+    varchar sku
+    varchar product_name
+    decimal quantity
+    decimal unit_price_snapshot
+    datetime created_at
+    datetime updated_at
+  }
+  cart_records {
+    int id PK
+    int customer_id FK
+    enum status
+    int checked_out_order_id FK
+    datetime created_at
+    datetime updated_at
+  }
+  case_assignments {
+    int id PK
+    int case_id FK
+    int agent_id FK
+    int team_id FK
+    int assigned_by FK
+    datetime assigned_at
+    datetime unassigned_at
+    varchar note
+  }
+  case_categories {
+    int id PK
+    varchar name UK
+    varchar description
+    enum default_priority
+    tinyint is_active
+    datetime created_at
+    datetime updated_at
+  }
+  case_comments {
+    int id PK
+    int case_id FK
+    int author_id FK
+    enum visibility
+    text body
+    datetime created_at
+    datetime updated_at
+  }
+  case_reads {
+    int user_id PK,FK
+    int case_id PK,FK
+    datetime last_read_at
+  }
+  case_status_history {
+    int id PK
+    int case_id FK
+    int changed_by FK
+    enum field
+    varchar old_value
+    varchar new_value
+    varchar note
+    datetime created_at
+  }
+  crm_audit_logs {
+    bigint id PK
+    int actor_user_id
+    varchar actor_role
+    varchar action
+    enum outcome
+    varchar record_type
+    varchar record_id
+    varchar reason
+    varchar details
+    json before_values
+    json after_values
+    varchar ip_address
+    char correlation_id
+    datetime created_at
+  }
+  crm_notifications {
+    int id PK
+    int user_id FK
+    enum type
+    varchar title
+    varchar message
+    varchar link
+    varchar related_type
+    int related_id
+    datetime read_at
+    datetime created_at
+  }
+  crm_settings {
+    varchar setting_key PK
+    varchar setting_value
+    varchar description
+    int updated_by FK
+    datetime updated_at
+  }
+  crm_teams {
+    int id PK
+    varchar team_code UK
+    varchar name
+    int team_leader_id FK
+    int manager_id FK
+    tinyint is_active
+    datetime created_at
+    datetime updated_at
+  }
+  crm_users {
+    int id PK
+    enum user_type
+    varchar role FK
+    enum role_source
+    varchar employee_id FK,UK
+    varchar email UK
+    varchar password_hash
+    enum login_via
+    datetime ess_activated_at
+    varchar display_name
+    int team_id FK
+    tinyint is_active
+    tinyint is_available
+    datetime email_verified_at
+    datetime last_login_at
+    datetime access_revoked_at
+    varchar access_revoked_reason
+    tinyint is_demo
+    datetime created_at
+    datetime updated_at
+  }
+  customer_accounts {
+    int id PK
+    int customer_id FK,UK
+    int user_id FK,UK
+    enum status
+    enum registered_via
+    datetime terms_accepted_at
+    datetime created_at
+    datetime updated_at
+  }
+  customer_addresses {
+    int id PK
+    int customer_id FK
+    varchar label
+    varchar line1
+    varchar barangay
+    varchar city_municipality
+    varchar province
+    varchar postal_code
+    tinyint is_default
+    datetime created_at
+    datetime updated_at
+  }
+  customer_cases {
+    int id PK
+    varchar case_no UK
+    int customer_id FK
+    enum case_type
+    int category_id FK
+    varchar subject
+    text description
+    enum priority
+    enum status
+    tinyint escalation_level
+    enum channel
+    int team_id FK
+    int assigned_agent_id FK
+    int sales_order_id FK
+    varchar order_reference
+    int inquiry_id FK
+    datetime first_response_due_at
+    datetime resolution_due_at
+    datetime first_response_at
+    datetime resolved_at
+    datetime closed_at
+    int reopen_count
+    datetime sla_breach_notified_at
+    int created_by FK
+    tinyint is_demo
+    datetime created_at
+    datetime updated_at
+  }
+  customer_consents {
+    int id PK
+    int customer_id FK
+    enum consent_type
+    tinyint granted
+    varchar policy_version
+    enum channel
+    int recorded_by FK
+    datetime granted_at
+    datetime withdrawn_at
+    datetime created_at
+  }
+  customer_contacts {
+    int id PK
+    int customer_id FK
+    enum contact_type
+    varchar value
+    tinyint is_primary
+    datetime verified_at
+    datetime created_at
+    datetime updated_at
+  }
+  customer_feedback {
+    int id PK
+    int customer_id FK
+    int rating_id FK,UK
+    int case_id FK
+    int sales_order_id FK
+    enum feedback_type
+    text comment
+    enum status
+    int reviewed_by FK
+    datetime reviewed_at
+    tinyint is_demo
+    datetime created_at
+  }
+  customer_interactions {
+    int id PK
+    int customer_id FK
+    int crm_user_id FK
+    enum interaction_type
+    enum direction
+    varchar subject
+    text summary
+    enum related_type
+    int related_id
+    datetime occurred_at
+    tinyint is_demo
+    datetime created_at
+  }
+  customer_preferences {
+    int id PK
+    int customer_id FK
+    varchar preference_key
+    varchar preference_value
+    datetime updated_at
+  }
+  customer_ratings {
+    int id PK
+    int customer_id FK
+    enum subject_type
+    int case_id FK,UK
+    int sales_order_id FK,UK
+    tinyint rating
+    tinyint is_demo
+    datetime created_at
+  }
+  customer_segments {
+    int id PK
+    varchar code UK
+    varchar name
+    varchar rule_description
+    tinyint is_active
+    datetime created_at
+    datetime updated_at
+  }
+  customers {
+    int id PK
+    char customer_id UK
+    varchar customer_no UK
+    varchar first_name
+    varchar last_name
+    varchar email
+    varchar mobile
+    varchar normalized_email
+    varchar normalized_mobile
+    enum customer_type
+    enum source
+    int segment_id FK
+    enum status
+    int merged_into_id FK
+    text notes
+    int created_by FK
+    tinyint is_demo
+    datetime created_at
+    datetime updated_at
+  }
+  department_references {
+    int id PK
+    varchar department_id UK
+    varchar code
+    varchar name
+    tinyint is_active
+    varchar source
+    varchar source_version
+    tinyint is_mock
+    datetime last_synced_at
+  }
+  discounts {
+    int id PK
+    varchar discount_code UK
+    varchar name
+    enum discount_type
+    decimal percent
+    decimal amount
+    tinyint requires_approval
+    tinyint requires_id_reference
+    tinyint is_active
+    datetime created_at
+    datetime updated_at
+  }
+  email_verification_tokens {
+    int id PK
+    int user_id FK
+    char token_hash UK
+    datetime expires_at
+    datetime used_at
+    datetime created_at
+  }
+  employee_references {
+    int id PK
+    varchar employee_id UK
+    varchar full_name
+    varchar work_email
+    varchar department_id
+    varchar position_id
+    enum employment_status
+    varchar supervisor_employee_id
+    varchar source
+    varchar source_version
+    tinyint is_mock
+    datetime last_synced_at
+  }
+  follow_up_tasks {
+    int id PK
+    int customer_id FK
+    int case_id FK
+    int sales_order_id FK
+    int assigned_to FK
+    int created_by FK
+    varchar title
+    text notes
+    datetime due_at
+    enum priority
+    enum status
+    datetime completed_at
+    tinyint is_demo
+    datetime created_at
+    datetime updated_at
+  }
+  forecast_runs {
+    int id PK
+    enum metric
+    varchar subject_key
+    varchar method
+    varchar method_version
+    date input_from
+    date input_to
+    int horizon_days
+    varchar error_metric
+    decimal error_value
+    varchar excluded_note
+    int generated_by FK
+    datetime generated_at
+  }
+  forecast_values {
+    int forecast_run_id PK,FK
+    date period_date PK
+    decimal estimate
+    decimal lower_bound
+    decimal upper_bound
+  }
+  inquiries {
+    int id PK
+    varchar inquiry_no UK
+    int customer_id FK
+    enum channel
+    varchar subject
+    text question
+    text answer
+    enum status
+    int handled_by FK
+    int converted_case_id FK
+    datetime answered_at
+    int created_by FK
+    tinyint is_demo
+    datetime created_at
+    datetime updated_at
+  }
+  integration_compensations {
+    bigint id PK
+    enum kind
+    varchar system
+    char order_id
+    varchar reservation_ref
+    char correlation_id
+    json lines_json
+    varchar reason
+    enum status
+    int attempts
+    datetime next_attempt_at
+    varchar last_error
+    tinyint is_mock
+    datetime created_at
+    datetime done_at
+  }
+  integration_inbox {
+    bigint id PK
+    char event_id UK
+    varchar event_type
+    int schema_version
+    varchar source
+    datetime occurred_at
+    varchar entity_id
+    char correlation_id
+    varchar idempotency_key
+    json payload
+    enum status
+    int attempts
+    varchar last_error
+    tinyint is_mock
+    datetime received_at
+    datetime processed_at
+  }
+  integration_logs {
+    bigint id PK
+    enum direction
+    varchar system
+    varchar endpoint
+    varchar http_method
+    char event_id
+    char correlation_id
+    smallint http_status
+    int duration_ms
+    tinyint success
+    enum mode
+    varchar message
+    datetime created_at
+  }
+  integration_outbox {
+    bigint id PK
+    char event_id UK
+    varchar event_type
+    int schema_version
+    varchar source
+    varchar target
+    datetime occurred_at
+    varchar entity_id
+    char correlation_id
+    varchar idempotency_key
+    json payload
+    enum status
+    int attempts
+    datetime next_attempt_at
+    varchar last_error
+    datetime sent_at
+    tinyint is_mock
+    datetime created_at
+  }
+  integration_request_nonces {
+    char signature PK
+    varchar client
+    datetime received_at
+  }
+  loyalty_accounts {
+    int id PK
+    int customer_id FK,UK
+    int points_balance
+    varchar tier
+    enum status
+    datetime created_at
+    datetime updated_at
+  }
+  loyalty_redemptions {
+    int id PK
+    int loyalty_account_id FK
+    int sales_order_id FK,UK
+    int redeem_transaction_id FK
+    int points
+    decimal amount
+    enum status
+    int return_transaction_id FK
+    datetime created_at
+  }
+  loyalty_transactions {
+    int id PK
+    int loyalty_account_id FK
+    int sales_transaction_id FK
+    int refund_id FK
+    enum txn_type
+    int points
+    varchar reason
+    int created_by FK
+    datetime created_at
+  }
+  mail_outbox {
+    int id PK
+    int user_id FK
+    varchar to_email
+    varchar subject
+    text body_text
+    varchar template
+    enum transport
+    enum status
+    varchar error
+    datetime created_at
+  }
+  number_sequences {
+    varchar scope PK
+    varchar period PK
+    int last_no
+  }
+  password_reset_tokens {
+    int id PK
+    int user_id FK
+    enum purpose
+    char token_hash UK
+    datetime expires_at
+    datetime used_at
+    datetime created_at
+  }
+  payment_references {
+    int id PK
+    int sales_order_id FK
+    enum method
+    varchar reference_no
+    decimal amount
+    datetime paid_at
+    enum status
+    int recorded_by FK
+    varchar void_reason
+    datetime created_at
+  }
+  permissions {
+    int id PK
+    varchar code UK
+    varchar module
+    varchar description
+  }
+  position_references {
+    int id PK
+    varchar position_id UK
+    varchar department_id
+    varchar title
+    tinyint is_active
+    varchar source
+    varchar source_version
+    tinyint is_mock
+    datetime last_synced_at
+  }
+  product_references {
+    int id PK
+    varchar product_id UK
+    varchar sku UK
+    varchar barcode
+    varchar name
+    text description
+    varchar category_name
+    varchar unit
+    varchar image_url
+    decimal selling_price
+    tinyint is_vatable
+    enum status
+    decimal available_qty
+    datetime availability_checked_at
+    tinyint low_stock
+    varchar source
+    varchar source_version
+    tinyint is_mock
+    datetime last_synced_at
+  }
+  promotion_redemptions {
+    int id PK
+    int promotion_id FK
+    int sales_order_id FK
+    int customer_id FK
+    decimal discount_amount
+    datetime redeemed_at
+  }
+  promotions {
+    int id PK
+    varchar promo_code UK
+    int campaign_id FK
+    varchar name
+    enum promo_type
+    decimal value
+    decimal min_order_amount
+    enum applies_to
+    varchar product_id
+    varchar category_name
+    datetime start_at
+    datetime end_at
+    int usage_limit
+    enum status
+    int created_by FK
+    int approved_by FK
+    datetime approved_at
+    tinyint is_demo
+    datetime created_at
+    datetime updated_at
+  }
+  refunds {
+    int id PK
+    char refund_id UK
+    varchar refund_no UK
+    int sales_transaction_id FK
+    int case_id FK
+    decimal amount
+    varchar reason
+    json return_items
+    enum status
+    int requested_by FK
+    int approved_by FK
+    datetime approved_at
+    varchar decision_reason
+    datetime recorded_at
+    char correlation_id
+    datetime created_at
+  }
+  response_templates {
+    int id PK
+    varchar title
+    int category_id FK
+    text body
+    tinyint is_active
+    int created_by FK
+    datetime created_at
+    datetime updated_at
+  }
+  role_permissions {
+    int role_id PK,FK
+    int permission_id PK,FK
+  }
+  roles {
+    int id PK
+    varchar code UK
+    varchar name
+    enum user_type
+    tinyint hierarchy_level
+    varchar description
+  }
+  sales_order_items {
+    int id PK
+    int sales_order_id FK
+    smallint line_no
+    varchar product_id
+    varchar sku
+    varchar product_name
+    varchar unit
+    decimal quantity
+    decimal unit_price
+    tinyint is_vatable
+    int promotion_id FK
+    int discount_id FK
+    decimal discount_amount
+    decimal line_total
+  }
+  sales_orders {
+    int id PK
+    char order_id UK
+    varchar order_no UK
+    int customer_id FK
+    int agent_id FK
+    int team_id FK
+    enum channel
+    enum fulfillment
+    int delivery_address_id FK
+    enum status
+    enum payment_status
+    enum reservation_status
+    varchar inventory_reservation_ref
+    decimal subtotal
+    decimal discount_total
+    decimal tax_total
+    decimal grand_total
+    char currency
+    char correlation_id
+    datetime submitted_at
+    datetime confirmed_at
+    datetime completed_at
+    datetime cancelled_at
+    varchar cancel_reason
+    int created_by FK
+    tinyint is_demo
+    datetime created_at
+    datetime updated_at
+  }
+  sales_transactions {
+    int id PK
+    char sale_id UK
+    varchar transaction_no UK
+    int sales_order_id FK,UK
+    int customer_id FK
+    decimal gross_amount
+    decimal discount_total
+    decimal tax_total
+    decimal net_amount
+    char currency
+    enum payment_status
+    enum status
+    datetime completed_at
+    char correlation_id
+    varchar idempotency_key UK
+    tinyint is_demo
+    datetime created_at
+  }
+  service_targets {
+    int id PK
+    enum priority
+    int team_id FK
+    int first_response_minutes
+    int resolution_minutes
+    datetime effective_from
+    int updated_by FK
+    datetime created_at
+  }
+  ticket_escalations {
+    int id PK
+    int case_id FK
+    tinyint from_level
+    tinyint to_level
+    int escalated_by FK
+    int escalated_to FK
+    varchar reason
+    enum outcome
+    int handled_by FK
+    datetime handled_at
+    varchar handling_note
+    datetime created_at
+  }

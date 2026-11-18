@@ -1,0 +1,78 @@
+{{> layout_top}}
+{{> settings_tabs}}
+<p class="mb-3 text-sm"><a href="/crm/approvals" class="text-violet-700 hover:underline">← Approvals Queue</a></p>
+<div class="grid gap-6 lg:grid-cols-3">
+  <section class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm lg:col-span-2" data-request="{{r.request_id}}" data-status="{{r.status}}">
+    <div class="flex flex-wrap items-start justify-between gap-2">
+      <div><h2 class="text-lg font-semibold text-slate-900">{{r.type_label}}</h2><p class="font-mono text-xs text-slate-500">{{r.request_id}}</p></div>
+      <div>{{approvalBadge r.status}}{{#if r.is_mock}} <span class="rounded border border-dashed border-amber-500 bg-amber-50 px-1.5 py-0.5 text-[10px] font-semibold uppercase text-amber-800" title="Sent by the mock ESS, not by real HR">Mock source</span>{{/if}}</div>
+    </div>
+    <p class="mt-3 text-sm">{{r.summary}}</p>
+    <dl class="mt-4 grid grid-cols-1 gap-x-6 gap-y-2 text-sm sm:grid-cols-2">
+      <div><dt class="text-xs font-medium uppercase text-slate-500">Employee</dt><dd>{{#if r.employee_name}}{{r.employee_name}}{{else}}Unknown employee{{/if}} <span class="font-mono text-xs text-slate-500">{{r.requester_employee_id}}</span>{{#if r.requester_role}}<span class="block text-xs text-slate-500">{{roleLabel r.requester_role}}</span>{{/if}}</dd></div>
+      <div><dt class="text-xs font-medium uppercase text-slate-500">Received</dt><dd>{{formatDateTime r.received_at}}</dd></div>
+      <div><dt class="text-xs font-medium uppercase text-slate-500">Routed to</dt><dd>{{#if r.approver_label}}{{r.approver_label}}{{else}}Nobody (see below){{/if}}</dd></div>
+      {{#if r.decided_at}}<div><dt class="text-xs font-medium uppercase text-slate-500">Decided</dt><dd>{{formatDateTime r.decided_at}} by {{r.decided_by_name}}</dd></div>{{/if}}
+      {{#each fields}}<div><dt class="text-xs font-medium uppercase text-slate-500">{{label}}</dt><dd>{{value}}</dd></div>{{/each}}
+    </dl>
+    {{#if r.decision_reason}}<p class="mt-4 rounded-lg bg-slate-50 px-3 py-2 text-sm"><span class="text-xs font-medium uppercase text-slate-500">Comment</span><br>{{r.decision_reason}}</p>{{/if}}
+    {{#if (eq r.status "exception")}}<p class="mt-4 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-900" role="note"><strong>No valid approver.</strong> {{r.exception_reason}}</p>{{/if}}
+    {{#if r.decision_event_id}}<p class="mt-4 text-xs text-slate-500">The decision was sent to HR as event <span class="font-mono">{{r.decision_event_id}}</span> through the outbox{{#if r.is_mock}} (mock source: recorded, never sent){{/if}}. HR owns the leave, attendance and overtime records; CRM never changes them.</p>{{/if}}
+  </section>
+
+  <aside class="space-y-4">
+    {{#if r.canDecide}}
+    <section class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm" data-decision="1">
+      <h2 class="font-semibold text-slate-900">Your decision</h2>
+      <form method="POST" action="/crm/approvals/{{r.id}}/decide" class="mt-3 space-y-2">
+        <input type="hidden" name="_csrf" value="{{csrfToken}}">
+        <label class="text-xs font-medium text-slate-500" for="comment">Comment (required to reject, at least {{minComment}} characters)</label>
+        <textarea id="comment" name="comment" rows="3" maxlength="255" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"></textarea>
+        <div class="flex gap-2">
+          <button name="decision" value="approve" class="flex-1 rounded-lg bg-emerald-600 px-3 py-2 text-sm font-medium text-white hover:bg-emerald-700" onclick="return confirm('Approve this request? The decision is sent to HR.');">Approve</button>
+          <button name="decision" value="reject" class="flex-1 rounded-lg border border-red-300 px-3 py-2 text-sm font-medium text-red-700 hover:bg-red-50" onclick="var c=document.getElementById('comment'); if (c.value.trim().length < {{minComment}}) { alert('Write why you reject it (at least {{minComment}} characters).'); c.focus(); return false; } return confirm('Reject this request? The decision is sent to HR.');">Reject</button>
+        </div>
+      </form>
+    </section>
+    {{else}}
+      {{#if r.own}}<section class="rounded-xl border border-slate-200 bg-white p-4 text-sm text-slate-600 shadow-sm">This is your own request. Nobody decides their own request.</section>{{/if}}
+    {{/if}}
+
+    {{#if r.canManage}}
+    <section class="rounded-xl border border-amber-300 bg-white p-4 shadow-sm" data-exception="1">
+      <h2 class="font-semibold text-slate-900">Exception: you decide what happens</h2>
+      {{#if assignable}}
+      <form method="POST" action="/crm/approvals/{{r.id}}/assign" class="mt-3 space-y-2">
+        <input type="hidden" name="_csrf" value="{{csrfToken}}">
+        <label class="text-xs font-medium text-slate-500" for="approver">Assign an approver</label>
+        <select id="approver" name="approver" required class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm">
+          <option value="">Choose…</option>
+          {{#each assignable.leaders}}<option value="{{id}}">Team Leader: {{name}}</option>{{/each}}
+          {{#if assignable.managerQueue}}<option value="manager">The CRM Manager queue</option>{{/if}}
+        </select>
+        <button class="w-full rounded-lg bg-slate-900 px-3 py-2 text-sm font-medium text-white hover:bg-slate-700">Assign</button>
+      </form>
+      {{/if}}
+      <form method="POST" action="/crm/approvals/{{r.id}}/return" class="mt-4 space-y-2 border-t border-slate-100 pt-3">
+        <input type="hidden" name="_csrf" value="{{csrfToken}}">
+        <label class="text-xs font-medium text-slate-500" for="return-comment">Return it to HR without a decision (say why)</label>
+        <input id="return-comment" name="comment" required minlength="{{minComment}}" maxlength="255" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm">
+        <button class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm hover:bg-slate-50">Return to HR</button>
+      </form>
+      {{#unless r.own}}<p class="mt-3 text-xs text-slate-500">You can also approve or reject it yourself with the decision box above.</p>{{/unless}}
+    </section>
+    {{/if}}
+  </aside>
+</div>
+
+<section class="mt-6 rounded-xl border border-slate-200 bg-white shadow-sm" id="history">
+  <h2 class="border-b border-slate-100 px-4 py-3 font-semibold text-slate-900">History</h2>
+  {{#if history.length}}
+  <div class="overflow-x-auto"><table class="stack min-w-full text-sm">
+    <thead class="bg-slate-50 text-left text-xs font-medium uppercase tracking-wide text-slate-500"><tr><th class="px-4 py-2">When</th><th class="px-4 py-2">Who</th><th class="px-4 py-2">What</th><th class="px-4 py-2">Details</th></tr></thead>
+    <tbody class="divide-y divide-slate-100 align-top">
+    {{#each history}}<tr><td class="whitespace-nowrap px-4 py-2 text-xs text-slate-500">{{formatDateTime created_at}}</td><td class="px-4 py-2">{{#if actor_name}}{{actor_name}}{{else}}<span class="text-slate-400">System / HR</span>{{/if}}</td><td class="px-4 py-2 font-mono text-xs">{{action}}</td><td class="px-4 py-2 text-xs text-slate-600">{{details}}{{#if reason}}<p>Comment: {{reason}}</p>{{/if}}</td></tr>{{/each}}
+    </tbody></table></div>
+  {{else}}<p class="px-6 py-6 text-center text-sm text-slate-500">No history yet.</p>{{/if}}
+</section>
+{{> layout_bottom}}

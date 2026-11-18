@@ -1,0 +1,9 @@
+<a {{#if href}}href="{{href}}"{{/if}} class="group relative flex items-center gap-3 overflow-hidden rounded-2xl border border-slate-200 bg-white p-3 shadow-sm sm:gap-4 sm:p-4 transition {{#if href}}hover:-translate-y-0.5 hover:shadow-md{{else}}cursor-default{{/if}}">
+  <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-white shadow-sm sm:h-12 sm:w-12 {{statBg href icon tone alert}}">{{icon (statIcon href icon tone alert) "h-6 w-6"}}</span>
+  <div class="relative z-10 min-w-0 flex-1">
+    <p class="text-[13px] font-medium leading-snug text-slate-600">{{label}}</p>
+    <p class="mt-0.5 text-2xl font-bold tabular-nums {{#if alert}}text-rose-600{{else}}text-navy-900{{/if}}">{{#if display}}{{display}}{{else}}{{#if money}}{{peso value}}{{else}}{{number value}}{{/if}}{{/if}}</p>
+    {{#if hint}}<p class="mt-0.5 text-xs text-slate-500">{{hint}}</p>{{/if}}
+  </div>
+  <span class="pointer-events-none absolute hidden sm:block -bottom-3 -right-1 opacity-60 {{statDecor href icon tone alert}}" aria-hidden="true">{{icon (statIcon href icon tone alert) "h-14 w-14"}}</span>
+</a>

@@ -1,0 +1,23 @@
+{{> layout_top}}
+{{> area_tabs}}
+{{> analytics_filter}}
+{{#unless f.includeDemo}}{{#if k.demoRowsExcluded}}<p class="-mt-2 mb-4 text-xs text-slate-500">{{k.demoRowsExcluded}} demo sale(s) and case(s) in this period are not counted. <a href="{{f.demoHref}}" class="text-violet-700 hover:underline">Include them</a>.</p>{{/if}}{{/unless}}
+<div class="mb-6 grid grid-cols-2 gap-3 lg:grid-cols-4" data-kpis="1">
+  {{> stat label="Net sales" value=k.netSales money=true href="/crm/analytics/sales" hint=(concat k.sales " sale(s), refunds subtracted")}}
+  {{> stat label="Average sale" value=k.avgSale money=true href="/crm/analytics/sales"}}
+  {{> stat label="Orders placed" value=k.orders href="/crm/sales" hint=(concat k.cancelled " cancelled")}}
+  {{> stat label="New customers" value=k.newCustomers href="/crm/analytics/customers"}}
+  {{> stat label="Cases opened" value=k.casesOpened href="/crm/reports" hint=(concat k.casesResolved " resolved")}}
+  {{> stat label="First reply on time" value=k.firstResponseOnTime href="/crm/reports" hint="percent of answered cases"}}
+  {{> stat label="Customer rating" value=k.csat href="/crm/reports" hint=(concat k.csatCount " rating(s), out of 5")}}
+  {{> stat label="Refunded" value=k.refunded money=true href="/crm/sales/refunds" hint=(concat k.refunds " refund(s)")}}
+</div>
+{{> charts blocks=blocks}}
+<section class="mt-6 rounded-xl border border-amber-200 bg-amber-50 p-5 text-sm" data-forecast-tile="1">
+  <h2 class="font-semibold text-slate-900">Next 7 days net sales <span class="ml-1 rounded bg-amber-200 px-1.5 py-0.5 text-xs font-semibold uppercase text-amber-900">Estimate</span></h2>
+  {{#if forecast}}
+  <p class="mt-2 text-2xl font-semibold tabular-nums">{{peso forecast.total}}</p>
+  <p class="text-xs text-slate-600">Range {{peso forecast.lower}} – {{peso forecast.upper}} · {{forecast.method}} · input {{forecast.run.input_from}} to {{forecast.run.input_to}} · back-test MAE {{fixed forecast.run.error_value 2}}{{#if forecast.run.includesDemo}} · <strong>includes demo data</strong>{{/if}}</p>
+  {{else}}<p class="mt-2 text-slate-600">No forecast has been computed yet. <a href="/crm/analytics/forecasts" class="text-violet-700 hover:underline">Open Forecasts</a>.</p>{{/if}}
+</section>
+{{> layout_bottom}}

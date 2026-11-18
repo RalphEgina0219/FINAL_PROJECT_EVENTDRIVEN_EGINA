@@ -1,0 +1,14 @@
+{{> layout_top}}
+{{> settings_tabs}}
+<p class="mb-3 max-w-3xl text-sm text-slate-600">Role-permission matrix (tables <code>roles</code>, <code>permissions</code>, <code>role_permissions</code>). Every route checks these on the server; record scope (own / team / all) is applied again in the data queries. Read-only: changes go through a reviewed migration.</p>
+<section class="rounded-xl border border-slate-200 bg-white shadow-sm">
+  <div class="overflow-x-auto"><table class="stack min-w-full text-sm">
+    <thead class="bg-slate-50 text-left text-xs font-medium uppercase tracking-wide text-slate-500"><tr><th class="px-4 py-2">Permission</th>{{#each roles}}<th class="px-3 py-2 text-center">{{roleLabel this}}</th>{{/each}}</tr></thead>
+    <tbody class="divide-y divide-slate-100">
+    {{#each rows}}
+      <tr><td class="px-4 py-2"><span class="font-mono text-xs">{{code}}</span><p class="text-xs text-slate-500">{{description}}</p></td>
+        {{#each cells}}<td class="px-3 py-2 text-center">{{#if this}}<span class="text-emerald-700" aria-label="allowed">✔</span>{{else}}<span class="text-slate-300" aria-label="not allowed">—</span>{{/if}}</td>{{/each}}</tr>
+    {{/each}}
+    </tbody></table></div>
+</section>
+{{> layout_bottom}}

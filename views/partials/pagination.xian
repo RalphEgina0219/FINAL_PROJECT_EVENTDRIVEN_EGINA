@@ -1,0 +1,10 @@
+{{#if pagination.show}}
+<nav class="flex flex-wrap items-center justify-between gap-2 border-t border-slate-100 px-4 py-3 text-sm" aria-label="Pagination">
+  <span class="text-slate-500">Showing {{pagination.from}}–{{pagination.to}} of {{pagination.total}}</span>
+  <div class="flex flex-wrap gap-1">
+    {{#if pagination.prevHref}}<a href="{{pagination.prevHref}}" class="rounded border border-slate-300 px-3 py-1 hover:bg-slate-50">Prev</a>{{/if}}
+    {{#each pagination.links}}<a href="{{href}}" class="rounded border px-3 py-1 {{#if active}}border-violet-600 bg-violet-600 text-white{{else}}border-slate-300 hover:bg-slate-50{{/if}}">{{n}}</a>{{/each}}
+    {{#if pagination.nextHref}}<a href="{{pagination.nextHref}}" class="rounded border border-slate-300 px-3 py-1 hover:bg-slate-50">Next</a>{{/if}}
+  </div>
+</nav>
+{{/if}}

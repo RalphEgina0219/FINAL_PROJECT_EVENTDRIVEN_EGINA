@@ -1,0 +1,5 @@
+<footer class="mt-8 py-4 text-center text-xs text-slate-500">
+  &copy; {{year}} JOHNVIVZ TECH · Customer Support &amp; Service Management · Built with XianFire Framework
+</footer>
+</body>
+</html>

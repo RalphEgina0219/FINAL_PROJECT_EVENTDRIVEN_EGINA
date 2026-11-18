@@ -1,0 +1,47 @@
+{{> layout_top}}
+<div class="mb-4 flex flex-wrap items-center justify-between gap-3">
+  <p class="text-sm text-slate-500">{{pagination.total}} case(s){{#if hasFilters}} match your filters{{/if}}</p>
+  {{#if isCustomer}}<div class="flex flex-wrap gap-2">
+    <a href="/portal/inquiries" class="inline-flex items-center gap-2 rounded-lg border border-violet-300 px-4 py-2 text-sm font-medium text-violet-700 hover:bg-violet-50">{{icon "question"}} Submit inquiry</a>
+    <a href="/portal/cases/new" class="inline-flex items-center gap-2 rounded-lg bg-violet-700 px-4 py-2 text-sm font-medium text-white hover:bg-violet-800">{{icon "plus"}} Submit a complaint</a></div>{{/if}}
+  {{#if canCreateStaff}}<a href="/crm/cases/new" class="inline-flex items-center gap-2 rounded-lg bg-violet-700 px-4 py-2 text-sm font-medium text-white hover:bg-violet-800">{{icon "plus"}} Open a case for a customer</a>{{/if}}
+</div>
+
+<form method="GET" action="{{base}}" class="mb-4 grid gap-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:grid-cols-2 lg:grid-cols-6">
+  <div class="sm:col-span-2"><label class="text-xs font-medium text-slate-500" for="q">Search</label>
+    <input id="q" name="q" value="{{filters.q}}" placeholder="Case no., subject{{#unless isCustomer}}, customer, CUS- no.{{/unless}}, order ref." class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"></div>
+  <div><label class="text-xs font-medium text-slate-500" for="status">Status</label>
+    <select id="status" name="status" class="mt-1 w-full rounded-lg border border-slate-300 px-2 py-2 text-sm"><option value="">All</option><option value="active" {{selected filters.status "active"}}>Active (not resolved)</option>{{#each statusOptions}}<option value="{{value}}" {{selected ../filters.status value}}>{{label}}</option>{{/each}}</select></div>
+  <div><label class="text-xs font-medium text-slate-500" for="priority">Priority</label>
+    <select id="priority" name="priority" class="mt-1 w-full rounded-lg border border-slate-300 px-2 py-2 text-sm"><option value="">All</option>{{#each priorityOptions}}<option value="{{value}}" {{selected ../filters.priority value}}>{{label}}</option>{{/each}}</select></div>
+  <div><label class="text-xs font-medium text-slate-500" for="category_id">Category</label>
+    <select id="category_id" name="category_id" class="mt-1 w-full rounded-lg border border-slate-300 px-2 py-2 text-sm"><option value="">All</option>{{#each categories}}<option value="{{id}}" {{selected ../filters.category_id id}}>{{name}}</option>{{/each}}</select></div>
+  <div><label class="text-xs font-medium text-slate-500" for="case_type">Type</label>
+    <select id="case_type" name="case_type" class="mt-1 w-full rounded-lg border border-slate-300 px-2 py-2 text-sm"><option value="">All</option>{{#each typeOptions}}<option value="{{value}}" {{selected ../filters.case_type value}}>{{label}}</option>{{/each}}</select></div>
+  {{#if isSupervisor}}
+  <div><label class="text-xs font-medium text-slate-500" for="agent">Agent</label>
+    <select id="agent" name="agent" class="mt-1 w-full rounded-lg border border-slate-300 px-2 py-2 text-sm"><option value="">All</option><option value="unassigned" {{selected filters.agent "unassigned"}}>Unassigned</option>{{#each agents}}<option value="{{id}}" {{selected ../filters.agent id}}>{{name}}</option>{{/each}}</select></div>
+  {{/if}}
+  {{#if isManager}}
+  <div><label class="text-xs font-medium text-slate-500" for="team">Team</label>
+    <select id="team" name="team" class="mt-1 w-full rounded-lg border border-slate-300 px-2 py-2 text-sm"><option value="">All teams</option>{{#each teams}}<option value="{{id}}" {{selected ../filters.team id}}>{{name}}</option>{{/each}}</select></div>
+  {{/if}}
+  {{#unless isCustomer}}
+  <div><label class="text-xs font-medium text-slate-500" for="demo">Records</label>
+    <select id="demo" name="demo" class="mt-1 w-full rounded-lg border border-slate-300 px-2 py-2 text-sm"><option value="">Demo + real</option><option value="real" {{selected filters.demo "real"}}>Real only</option><option value="demo" {{selected filters.demo "demo"}}>Demo only</option></select></div>
+  {{/unless}}
+  <div><label class="text-xs font-medium text-slate-500" for="sort">Sort</label>
+    <select id="sort" name="sort" class="mt-1 w-full rounded-lg border border-slate-300 px-2 py-2 text-sm"><option value="newest" {{selected filters.sort "newest"}}>Newest</option><option value="oldest" {{selected filters.sort "oldest"}}>Oldest</option><option value="updated" {{selected filters.sort "updated"}}>Recently updated</option><option value="due" {{selected filters.sort "due"}}>Due date</option><option value="priority" {{selected filters.sort "priority"}}>Priority</option></select></div>
+  <div class="flex flex-col justify-end gap-1 pb-1 text-sm">
+    {{#unless isCustomer}}<label class="flex items-center gap-2"><input type="checkbox" name="overdue" value="1" {{#if filters.overdue}}checked{{/if}} class="rounded border-slate-300"> Overdue only</label>
+    <label class="flex items-center gap-2"><input type="checkbox" name="escalated" value="1" {{#if filters.escalated}}checked{{/if}} class="rounded border-slate-300"> Escalated only</label>{{/unless}}
+    <label class="flex items-center gap-2"><input type="checkbox" name="unread" value="1" {{#if filters.unread}}checked{{/if}} class="rounded border-slate-300"> Unread only</label>
+  </div>
+  <div class="flex items-end gap-2 lg:col-span-2"><button class="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700">Apply filters</button>{{#if hasFilters}}<a href="{{base}}" class="rounded-lg border border-slate-300 px-4 py-2 text-sm hover:bg-slate-50">Clear</a>{{/if}}</div>
+</form>
+
+<section class="rounded-xl border border-slate-200 bg-white shadow-sm">
+  {{#if isCustomer}}{{> case_table cases=cases base=base emptyText="No cases found."}}{{else}}{{> case_table cases=cases base=base showCustomer=true showAgent=true emptyText="No cases match these filters."}}{{/if}}
+  {{> pagination}}
+</section>
+{{> layout_bottom}}

@@ -1,0 +1,21 @@
+{{> layout_top}}
+<p class="mb-3 text-sm"><a href="/crm/my-requests" class="text-violet-700 hover:underline">← My Requests</a></p>
+<p class="mb-4 flex items-start gap-2 rounded-lg border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-900" role="note" data-my-requests-note="1">{{icon "lock" "mt-0.5 h-4 w-4 shrink-0"}}<span><strong>Requests are filed and owned in ESS/HR. This is a copy for your reference.</strong> Nothing can be changed here.</span></p>
+<section class="max-w-3xl rounded-xl border border-slate-200 bg-white p-5 shadow-sm" data-request="{{r.request_id}}" data-status="{{r.status}}">
+  <div class="flex flex-wrap items-start justify-between gap-2">
+    <div><h2 class="text-lg font-semibold text-slate-900">{{r.type_label}}</h2><p class="font-mono text-xs text-slate-500">{{r.request_id}}</p></div>
+    <div>{{approvalBadge r.status}}</div>
+  </div>
+  <p class="mt-3 text-sm">{{r.summary}}</p>
+  <dl class="mt-4 grid grid-cols-1 gap-x-6 gap-y-2 text-sm sm:grid-cols-2">
+    <div><dt class="text-xs font-medium uppercase text-slate-500">Received</dt><dd>{{formatDateTime r.received_at}}</dd></div>
+    <div><dt class="text-xs font-medium uppercase text-slate-500">Status</dt><dd>{{r.status_label}}</dd></div>
+    <div><dt class="text-xs font-medium uppercase text-slate-500">Decided by</dt><dd>{{#if r.decided_by_name}}{{r.decided_by_name}}{{else}}—{{/if}}</dd></div>
+    <div><dt class="text-xs font-medium uppercase text-slate-500">When</dt><dd>{{#if r.decided_at}}{{formatDateTime r.decided_at}}{{else}}—{{/if}}</dd></div>
+    {{#each fields}}<div><dt class="text-xs font-medium uppercase text-slate-500">{{label}}</dt><dd>{{value}}</dd></div>{{/each}}
+  </dl>
+  {{#if r.decision_reason}}<p class="mt-4 rounded-lg bg-slate-50 px-3 py-2 text-sm"><span class="text-xs font-medium uppercase text-slate-500">Comment</span><br>{{r.decision_reason}}</p>{{/if}}
+  {{#if (eq r.status "pending")}}<p class="mt-4 text-xs text-slate-500">Waiting for a decision.</p>{{/if}}
+  {{#if (eq r.status "exception")}}<p class="mt-4 text-xs text-slate-500">Waiting for the CRM Manager (no approver could be found automatically).</p>{{/if}}
+</section>
+{{> layout_bottom}}

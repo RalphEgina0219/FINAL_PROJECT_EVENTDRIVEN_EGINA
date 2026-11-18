@@ -1,0 +1,20 @@
+{{> layout_top}}
+{{> area_tabs}}
+{{> analytics_filter}}
+{{> charts blocks=blocks}}
+<div class="mt-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
+  {{> stat label="Loyalty points earned" value=d.loyalty.earned href="/crm/loyalty"}}
+  {{> stat label="Loyalty points redeemed" value=d.loyalty.redeemed href="/crm/loyalty"}}
+  {{> stat label="Paid by GCash / Maya" value=(add d.payments.gcash d.payments.maya) href="/crm/sales/payments" hint="verified payments"}}
+  {{> stat label="Paid in cash / COD" value=(add d.payments.cash d.payments.cod) href="/crm/sales/payments" hint="verified payments"}}
+</div>
+<section class="mt-6 rounded-xl border border-slate-200 bg-white shadow-sm">
+  <h2 class="border-b border-slate-100 px-4 py-3 font-semibold text-slate-900">Top products</h2>
+  {{#if d.products.length}}
+  <div class="overflow-x-auto"><table class="stack min-w-full text-sm">
+    <thead class="bg-slate-50 text-left text-xs font-medium uppercase tracking-wide text-slate-500"><tr><th class="px-4 py-2">Product</th><th class="px-4 py-2 text-right">Units</th><th class="px-4 py-2 text-right">Revenue</th></tr></thead>
+    <tbody class="divide-y divide-slate-100">{{#each d.products}}<tr><td class="px-4 py-2">{{label}}</td><td class="px-4 py-2 text-right tabular-nums">{{units}}</td><td class="px-4 py-2 text-right tabular-nums">{{peso revenue}}</td></tr>{{/each}}</tbody>
+  </table></div>
+  {{else}}<p class="px-6 py-8 text-center text-sm text-slate-500">No completed sales in this period.</p>{{/if}}
+</section>
+{{> layout_bottom}}

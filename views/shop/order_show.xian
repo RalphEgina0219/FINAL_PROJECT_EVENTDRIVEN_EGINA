@@ -1,0 +1,32 @@
+{{> layout_top}}
+{{> area_tabs}}
+<a href="/portal/orders" class="mb-4 inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-700">{{icon "arrow-left" "h-4 w-4"}} Back to my orders</a>
+<div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+  <div class="space-y-6 lg:col-span-2">
+    <section class="rounded-xl border border-slate-200 bg-white p-5 text-sm shadow-sm">
+      <div class="flex flex-wrap items-center gap-2"><span class="font-mono text-base font-semibold">{{o.order_no}}</span><span class="rounded-full bg-indigo-50 px-2 py-0.5 text-xs font-medium text-indigo-700 ring-1 ring-inset ring-indigo-600/20">{{o.status_label}}</span><span class="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-700">{{o.payment_label}}</span>{{#if o.is_demo}}{{demoBadge}}{{/if}}</div>
+      <p class="mt-2 text-slate-600">{{o.fulfillment_label}} · placed {{formatDateTime o.created_at}}</p>
+      {{#if o.address}}<p class="mt-1 text-slate-600">Delivery to: {{o.address.line1}}{{#if o.address.city_municipality}}, {{o.address.city_municipality}}{{/if}}</p>{{/if}}
+      {{#if o.cancel_reason}}<p class="mt-2 rounded-lg bg-slate-50 px-3 py-2 text-slate-700">Cancelled: {{o.cancel_reason}}</p>{{/if}}
+    </section>
+    <section class="rounded-xl border border-slate-200 bg-white shadow-sm"><div class="border-b border-slate-100 px-4 py-3"><h2 class="font-semibold">Items</h2></div>
+      <div class="overflow-x-auto"><table class="stack min-w-full text-sm"><tbody class="divide-y divide-slate-100">{{#each o.items}}<tr><td class="px-4 py-2">{{product_name}}</td><td class="px-4 py-2 text-right tabular-nums">{{quantity}} {{unit}}</td><td class="px-4 py-2 text-right tabular-nums">{{peso unit_price}}</td><td class="px-4 py-2 text-right tabular-nums">{{peso line_total}}</td></tr>{{/each}}</tbody>
+        <tfoot class="border-t border-slate-200"><tr><td colspan="3" class="px-4 py-1 text-right text-slate-500">Subtotal</td><td class="px-4 py-1 text-right tabular-nums">{{peso o.subtotal}}</td></tr>{{#if o.promotion}}<tr><td colspan="3" class="px-4 py-1 text-right text-slate-500">Promo {{o.promotion.promo_code}}</td><td class="px-4 py-1 text-right tabular-nums">−{{peso o.promotion.discount_amount}}</td></tr>{{/if}}{{#if o.loyalty}}<tr data-loyalty-line="1"><td colspan="3" class="px-4 py-1 text-right text-slate-500">Loyalty points ({{o.loyalty.points}} pts{{#if (eq o.loyalty.status "returned")}}, given back{{/if}})</td><td class="px-4 py-1 text-right tabular-nums">−{{peso o.loyalty.amount}}</td></tr>{{/if}}<tr><td colspan="3" class="px-4 py-2 text-right font-semibold">Total</td><td class="px-4 py-2 text-right font-semibold tabular-nums">{{peso o.grand_total}}</td></tr></tfoot></table></div></section>
+    <section class="rounded-xl border border-slate-200 bg-white shadow-sm"><div class="border-b border-slate-100 px-4 py-3"><h2 class="font-semibold">Payments</h2></div>
+      {{#if payments.length}}<ul class="divide-y divide-slate-100 text-sm">{{#each payments}}<li class="flex flex-wrap items-center justify-between gap-2 px-4 py-2"><span>{{method_label}} {{peso amount}}{{#if reference_no}} · ref <span class="font-mono">{{reference_no}}</span>{{/if}}</span><span class="text-xs text-slate-600">{{status_label}}</span></li>{{/each}}</ul>{{else}}<p class="px-4 py-4 text-sm text-slate-500">No payment yet.</p>{{/if}}
+      {{#if canPay}}<form method="POST" action="/portal/orders/{{o.id}}/pay" class="grid grid-cols-1 gap-2 border-t border-slate-100 bg-slate-50 p-4 sm:grid-cols-4"><input type="hidden" name="_csrf" value="{{csrfToken}}">
+        <select name="method" required aria-label="Method" class="rounded-lg border border-slate-300 px-3 py-2 text-sm"><option value="gcash">GCash</option><option value="maya">Maya</option></select>
+        <input name="reference" required maxlength="40" placeholder="Reference number" aria-label="Reference number" class="rounded-lg border border-slate-300 px-3 py-2 font-mono text-sm">
+        <input name="amount" required inputmode="decimal" value="{{o.outstanding}}" aria-label="Amount" class="rounded-lg border border-slate-300 px-3 py-2 text-right text-sm">
+        <button class="rounded-lg bg-violet-700 px-4 py-2 text-sm font-medium text-white hover:bg-violet-800">Send reference</button>
+        <p class="text-xs text-slate-500 sm:col-span-4">Pay in your GCash or Maya app first, then type the reference number. We verify it before the order is complete.</p></form>{{/if}}
+    </section>
+    {{#if refunds.length}}<section class="rounded-xl border border-slate-200 bg-white shadow-sm"><div class="border-b border-slate-100 px-4 py-3"><h2 class="font-semibold">Refunds</h2></div><ul class="divide-y divide-slate-100 text-sm">{{#each refunds}}<li class="flex justify-between gap-2 px-4 py-2"><span class="font-mono">{{refund_no}}</span><span>{{peso amount}} · {{status_label}}</span></li>{{/each}}</ul></section>{{/if}}
+  </div>
+  <aside class="space-y-6">
+    <section class="rounded-xl border border-slate-200 bg-white p-5 text-sm shadow-sm"><h3 class="mb-3 font-semibold">Progress</h3>
+      <ol class="space-y-2">{{#each tracking}}<li class="{{#if done}}{{#if cancelled}}text-red-700{{else}}text-emerald-700{{/if}}{{else}}text-slate-400{{/if}}">{{#if done}}✓{{else}}○{{/if}} {{label}}{{#if at}}<span class="block text-xs text-slate-500">{{formatDateTime at}}</span>{{/if}}</li>{{/each}}</ol></section>
+    {{#if canCancel}}<section class="rounded-xl border border-slate-200 bg-white p-5 text-sm shadow-sm"><form method="POST" action="/portal/orders/{{o.id}}/cancel" onsubmit="return confirm('Cancel this order?');"><input type="hidden" name="_csrf" value="{{csrfToken}}"><input name="reason" maxlength="200" placeholder="Reason (optional)" aria-label="Reason" class="mb-2 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"><button class="w-full rounded-lg border border-red-300 px-4 py-2 text-sm text-red-700 hover:bg-red-50">Cancel order</button></form><p class="mt-2 text-xs text-slate-500">You can cancel until a payment is verified.</p></section>{{/if}}
+  </aside>
+</div>
+{{> layout_bottom}}

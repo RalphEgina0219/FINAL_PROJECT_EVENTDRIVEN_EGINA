@@ -1,0 +1,41 @@
+{{> layout_top welcome=true welcomeText="Here is your work for today: cases, follow-ups and inquiries."}}
+{{> demo_notice}}
+<div class="grid grid-cols-2 gap-4 lg:grid-cols-4">
+  {{> stat label="My active cases" value=summary.active_count href="/crm/cases?status=active"}}
+  {{> stat label="Pending responses" value=summary.awaiting_first_response href="/crm/cases?status=in_progress" hint="No first reply yet"}}
+  {{> stat label="Overdue (SLA)" value=summary.overdue_count href="/crm/cases?overdue=1" alert=summary.overdue_count}}
+  {{> stat label="Resolved (7 days)" value=summary.resolved_7d href="/crm/cases?status=resolved"}}
+  {{> stat label="My customers" value=myCustomers href="/crm/customers"}}
+  {{> stat label="Waiting for customer" value=summary.waiting_count href="/crm/cases?status=waiting_for_customer"}}
+  {{> stat label="Follow-ups due today" value=followUps.today href="/crm/follow-ups?status=today" alert=followUps.overdue hint=(concat followUps.overdue " overdue")}}
+  {{> stat label="Open inquiries" value=inquiries.open href="/crm/inquiries?status=open" alert=inquiries.unclaimed hint=(concat inquiries.unclaimed " not taken yet")}}
+  {{> stat label="Escalated by me (with supervisor)" value=summary.escalated_count href="/crm/cases?escalated=1"}}
+  {{> stat label="My rating" display=(ratingText ratings.avg ratings.total) icon="star" tone="amber" hint=(concat ratings.total " rating(s) · avg first reply " (duration times.avg_first_response))}}
+</div>
+<div class="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-3">
+  <section class="rounded-xl border border-slate-200 bg-white shadow-sm lg:col-span-3">
+    <div class="flex items-center justify-between border-b border-slate-100 px-4 py-3"><h2 class="font-semibold">My work queue (overdue first)</h2><a href="/crm/cases" class="text-sm text-violet-700 hover:underline">All my cases</a></div>
+    {{> case_table cases=queue base="/crm/cases" showCustomer=true emptyText="No active cases. Nice work!"}}
+  </section>
+</div>
+<section class="mt-6 rounded-xl border border-slate-200 bg-white shadow-sm" aria-label="Today's follow-ups">
+  <div class="flex items-center justify-between border-b border-slate-100 px-4 py-3"><h2 class="font-semibold">Today's follow-ups</h2><span class="flex gap-3 text-sm"><a href="/crm/follow-ups/new" class="text-violet-700 hover:underline">New follow-up</a><a href="/crm/follow-ups" class="text-violet-700 hover:underline">All follow-ups</a></span></div>
+  {{#if dueTasks.length}}<ul class="divide-y divide-slate-100 text-sm">{{#each dueTasks}}<li class="flex flex-wrap items-center justify-between gap-2 px-4 py-2"><span><a href="/crm/follow-ups/{{id}}" class="font-medium text-slate-800 hover:underline">{{title}}</a> <span class="text-xs text-slate-500">{{customer_name}}</span></span><span class="text-xs {{#if overdue}}font-semibold text-red-600{{else}}text-slate-500{{/if}}">{{#if overdue}}Overdue · {{/if}}{{formatDateTime due_at}}</span></li>{{/each}}</ul>
+  {{else}}<p class="px-4 py-6 text-center text-sm text-slate-500">No follow-ups due. Nice work!</p>{{/if}}
+</section>
+<section class="mt-6 rounded-xl border border-slate-200 bg-white shadow-sm" aria-label="Recent interactions">
+  <div class="flex items-center justify-between border-b border-slate-100 px-4 py-3"><h2 class="font-semibold">Recent interactions</h2><span class="flex gap-3 text-sm"><a href="/crm/interactions/new" class="text-violet-700 hover:underline">Log interaction</a><a href="/crm/interactions" class="text-violet-700 hover:underline">All interactions</a></span></div>
+  {{#if recentInteractions.length}}<ul class="divide-y divide-slate-100 text-sm">{{#each recentInteractions}}<li class="flex flex-wrap items-center justify-between gap-2 px-4 py-2"><span><a href="/crm/interactions/{{id}}" class="font-medium text-slate-800 hover:underline">{{subject}}</a> <span class="text-xs text-slate-500">{{customer_name}} · {{type_label}}</span></span><span class="text-xs text-slate-500">{{formatDateTime occurred_at}}</span></li>{{/each}}</ul>
+  {{else}}<p class="px-4 py-6 text-center text-sm text-slate-500">No interactions logged yet.</p>{{/if}}
+</section>
+<section class="mt-6" aria-label="Orders">
+  <div class="mb-3 flex items-center justify-between"><h2 class="font-semibold text-slate-900">Orders</h2><span class="flex gap-3 text-sm"><a href="/crm/sales/new" class="text-violet-700 hover:underline">New order</a><a href="/crm/sales" class="text-violet-700 hover:underline">All orders</a></span></div>
+  <div class="grid grid-cols-2 gap-4 lg:grid-cols-4">
+    {{> stat label="In progress" value=sales.in_progress href="/crm/sales?status=confirmed"}}
+    {{> stat label="Awaiting payment" value=sales.awaiting_payment href="/crm/sales?payment=unpaid" alert=sales.awaiting_payment}}
+    {{> stat label="Payments to verify" value=sales.to_verify href="/crm/sales/payments?status=recorded" alert=sales.to_verify}}
+    {{> stat label="Completed sales" value=sales.completed href="/crm/sales?status=completed"}}
+  </div>
+</section>
+<div class="mt-6" aria-label="My requests">{{> my_requests_card}}</div>
+{{> layout_bottom}}

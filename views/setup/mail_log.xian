@@ -1,0 +1,25 @@
+{{> layout_top}}
+<div class="mb-4 rounded-lg border border-dashed border-sky-300 bg-sky-50 px-4 py-3 text-sm text-sky-900">
+  <strong>Mail transport: {{transport}}.</strong>
+  {{#if devMode}}Nothing is sent: MAIL_TRANSPORT=log keeps each message here so verification, reset and invitation links can be used during development and demos. Set MAIL_TRANSPORT=smtp (and the SMTP_* values in .env) to send real email.
+  {{else}}Messages are delivered through the configured SMTP server. Failed deliveries are listed with the error.{{/if}}
+</div>
+<section class="rounded-xl border border-slate-200 bg-white shadow-sm">
+  {{#if rows.length}}
+  <ul class="divide-y divide-slate-100">
+    {{#each rows}}
+    <li class="px-4 py-3">
+      <div class="flex flex-wrap items-center justify-between gap-2">
+        <p class="font-medium text-slate-900">{{subject}}</p>
+        <p class="text-xs text-slate-500">{{formatDateTime created_at}} · {{template}} ·
+          {{#if (eq status "failed")}}<span class="text-red-600">failed: {{error}}</span>{{else}}{{#if (eq status "sent")}}<span class="text-emerald-700">sent</span>{{else}}<span class="text-sky-700">logged only</span>{{/if}}{{/if}}</p>
+      </div>
+      <p class="text-xs text-slate-500">To: {{to_email}}</p>
+      <pre class="mt-2 max-h-48 overflow-auto whitespace-pre-wrap rounded bg-slate-50 p-3 text-xs text-slate-700">{{body_text}}</pre>
+    </li>
+    {{/each}}
+  </ul>
+  {{else}}<p class="p-6 text-center text-sm text-slate-500">No email has been queued yet.</p>{{/if}}
+</section>
+<p class="mt-3 text-xs text-slate-500">Links in these messages work once and expire (defaults: verification 48 hours, reset 60 minutes, staff invitation 72 hours). With SMTP the message body is not stored, so this page never exposes live links.</p>
+{{> layout_bottom}}

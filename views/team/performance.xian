@@ -1,0 +1,17 @@
+{{> layout_top}}
+{{#if isManager}}
+<section class="mb-6 rounded-xl border border-slate-200 bg-white shadow-sm">
+  <div class="border-b border-slate-100 px-4 py-3"><h2 class="font-semibold">Teams</h2></div>
+  <div class="overflow-x-auto"><table class="stack min-w-full text-sm">
+    <thead class="bg-slate-50 text-left text-xs font-medium uppercase tracking-wide text-slate-500"><tr><th class="px-4 py-2">Team</th><th class="px-4 py-2">Team Leader</th><th class="px-4 py-2 text-right">Agents</th><th class="px-4 py-2 text-right">Active cases</th><th class="px-4 py-2 text-right">Overdue</th><th class="px-4 py-2 text-right">Escalated</th></tr></thead>
+    <tbody class="divide-y divide-slate-100 tabular-nums">{{#each teams}}<tr><td class="px-4 py-3 font-medium"><a class="text-violet-700 hover:underline" href="/crm/cases?team={{id}}&status=active">{{name}}</a> <span class="text-xs text-slate-400">{{team_code}}</span></td><td class="px-4 py-3">{{#if leader_name}}{{leader_name}}{{else}}<span class="text-amber-700">None</span>{{/if}}</td><td class="px-4 py-3 text-right">{{agent_count}}</td><td class="px-4 py-3 text-right">{{active_cases}}</td><td class="px-4 py-3 text-right {{#if overdue_cases}}font-semibold text-red-600{{/if}}">{{overdue_cases}}</td><td class="px-4 py-3 text-right">{{escalated_cases}}</td></tr>{{/each}}</tbody>
+  </table></div>
+</section>
+{{else}}
+<p class="mb-4 text-sm text-slate-500">Agents of <strong>{{teamName}}</strong> and their current workload. Assign cases from the <a href="/crm/queue" class="text-violet-700 hover:underline">Customer Queue</a> or from a case page.</p>
+{{/if}}
+<section class="rounded-xl border border-slate-200 bg-white shadow-sm">
+  <div class="border-b border-slate-100 px-4 py-3"><h2 class="font-semibold">Agent performance</h2><p class="text-xs text-slate-500">Staff identity and employment status come from HR. Agents whose HR status is inactive or separated have no CRM access.</p></div>
+  {{> workload_table}}
+</section>
+{{> layout_bottom}}

@@ -1,0 +1,157 @@
+{{> layout_top}}
+{{> settings_tabs}}
+
+{{#if (not anyLive)}}
+<div class="mb-4 flex items-start gap-2 rounded-lg border border-dashed border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900" role="note" data-integration-mock="1">
+  <span><strong>No application is in live mode.</strong> Events for mock applications are recorded as "Mock (never sent)" and events for disabled applications as "Skipped"; nothing leaves CRM. Live mode is switched on in <span class="font-mono">.env</span> (INTEGRATION_*_MODE=live) after the other team has confirmed <span class="font-mono">docs/integration-contract.md</span>.</span>
+</div>
+{{else}}
+<div class="mb-4 flex items-start gap-2 rounded-lg border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-900" role="note">
+  <span><strong>Live mode is on for at least one application.</strong> CRM sends real signed calls to it. The contract is a draft until the other team confirms it, so a green status here means "the application accepted our call", not "the team verified the integration".</span>
+</div>
+{{/if}}
+
+<section class="mb-6 rounded-xl border border-slate-200 bg-white shadow-sm">
+  <h2 class="border-b border-slate-100 px-4 py-3 font-semibold text-slate-900">Connected applications</h2>
+  <div class="overflow-x-auto"><table class="stack min-w-full text-sm">
+    <thead class="bg-slate-50 text-left text-xs font-medium uppercase tracking-wide text-slate-500"><tr><th class="px-4 py-2">Application</th><th class="px-4 py-2">Mode</th><th class="px-4 py-2">How CRM connects</th><th class="px-4 py-2">Base URL</th><th class="px-4 py-2">Our credential</th><th class="px-4 py-2">Their credential</th><th class="px-4 py-2">Last good call</th><th class="px-4 py-2">Last error</th><th class="px-4 py-2"></th></tr></thead>
+    <tbody class="divide-y divide-slate-100 align-top">
+    {{#each apps}}
+      <tr data-app="{{key}}">
+        <td class="px-4 py-3 font-medium">{{label}}<p class="font-mono text-xs font-normal text-slate-500">{{system}}</p></td>
+        <td class="px-4 py-3">{{integrationBadge mode}}</td>
+        <td class="px-4 py-3 text-xs" data-auth="{{auth}}">{{style}}</td>
+        <td class="px-4 py-3 text-xs">{{#if baseUrl}}Configured{{else}}<span class="text-slate-400">Not set</span>{{/if}}</td>
+        <td class="px-4 py-3 text-xs" title="{{#if bearer}}the API token CRM sends ({{key}}_API_TOKEN){{else}}JVZ_SECRET_* signs what CRM sends{{/if}}">{{#if outboundSecret}}Configured{{else}}<span class="text-slate-400">Not set</span>{{/if}}</td>
+        <td class="px-4 py-3 text-xs" title="{{#if bearer}}the same API token is accepted from the application{{else}}JVZ_CRM_INBOUND_SECRET_* checks what the application sends to CRM{{/if}}">{{#if inboundSecret}}Configured{{else}}<span class="text-slate-400">Not set</span>{{/if}}</td>
+        <td class="px-4 py-3 text-xs">{{#if lastOk}}{{formatDateTime lastOk.created_at}}<p class="font-mono text-slate-500">{{lastOk.endpoint}}</p>{{else}}<span class="text-slate-400">—</span>{{/if}}</td>
+        <td class="max-w-xs px-4 py-3 text-xs">{{#if lastError}}{{formatDateTime lastError.created_at}}<p class="break-words text-red-700">{{lastError.message}}</p>{{else}}<span class="text-slate-400">—</span>{{/if}}</td>
+        <td class="px-4 py-3 text-right"><form method="POST" action="{{../base}}/test/{{key}}"><input type="hidden" name="_csrf" value="{{@root.csrfToken}}"><button class="rounded border border-slate-300 px-2 py-1 text-xs hover:bg-slate-50" {{#unless live}}disabled title="Only an application in live mode can be tested"{{/unless}}>Test connection</button></form>
+          {{#if hrPull}}<form method="POST" action="{{../base}}/hr-sync" class="mt-2" data-hr-sync="1"><input type="hidden" name="_csrf" value="{{@root.csrfToken}}"><button class="rounded border border-violet-300 px-2 py-1 text-xs text-violet-800 hover:bg-violet-50">Sync now</button></form>{{/if}}</td>
+      </tr>
+    {{/each}}
+    </tbody></table></div>
+</section>
+
+<div class="mb-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
+  {{> stat label="Waiting to send" value=overview.outbox.pending href=(concat base "?outbox=pending") hint="live events not tried yet"}}
+  {{> stat label="Retrying" value=overview.outbox.failed href=(concat base "?outbox=failed") hint=(concat "delays: " retrySchedule)}}
+  {{> stat label="Dead letters" value=overview.outbox.dead href=(concat base "?outbox=dead") alert=overview.outbox.dead hint="sent after the last retry failed"}}
+  {{> stat label="Sent (24 h)" value=overview.outbox.sent24 href=(concat base "?outbox=sent") hint=(concat overview.outbox.mock " mock event(s) never sent")}}
+  {{> stat label="Inbound failed" value=overview.inbox.failed href=(concat base "?inbox=failed") hint="will be retried"}}
+  {{> stat label="Inbound dead" value=overview.inbox.dead href=(concat base "?inbox=dead") alert=overview.inbox.dead hint="needs a manual reprocess"}}
+  {{> stat label="Stock clean-up pending" value=overview.compensations.pending hint=(concat overview.compensations.dead " dead")}}
+  {{> stat label="Unmatched sales" value=overview.reconciliation.unmatched href=(concat base "/reconciliation?problems=1") alert=overview.reconciliation.unmatched hint=(concat "no confirmation after " reconHours " h")}}
+</div>
+
+<section class="mb-6 rounded-xl border {{#if stale.length}}border-amber-300{{else}}border-slate-200{{/if}} bg-white shadow-sm" data-stale-reservations="{{stale.length}}">
+  <div class="border-b border-slate-100 px-4 py-3"><h2 class="font-semibold text-slate-900">Stock held at Inventory for more than {{staleHours}} hours</h2>
+    <p class="text-xs text-slate-500">Inventory's reservations never expire. Complete these orders, or cancel them so CRM sends order.cancelled and the stock is released.</p></div>
+  {{#if stale.length}}<div class="overflow-x-auto"><table class="stack min-w-full text-sm"><tbody class="divide-y divide-slate-100">
+    {{#each stale}}<tr data-stale-order="{{order_no}}"><td class="px-4 py-2 font-mono">{{#if ../orderBase}}<a class="text-violet-700 hover:underline" href="{{../orderBase}}/{{id}}">{{order_no}}</a>{{else}}{{order_no}}{{/if}}{{#if is_demo}} <span class="text-xs text-slate-400">demo</span>{{/if}}</td><td class="px-4 py-2 text-xs">{{status}} · {{payment_status}}</td><td class="px-4 py-2 text-xs text-slate-500">confirmed {{formatDateTime confirmed_at}} ({{age_hours}} h ago)</td><td class="px-4 py-2 font-mono text-xs text-slate-400">{{inventory_reservation_ref}}</td></tr>{{/each}}
+  </tbody></table></div>{{else}}<p class="px-4 py-3 text-sm text-slate-500">None. Every order that holds stock at Inventory is younger than {{staleHours}} hours.</p>{{/if}}
+  {{#if conflicts.length}}<div class="border-t border-red-100 px-4 py-3" data-reservation-conflicts="{{conflicts.length}}"><h3 class="text-sm font-semibold text-red-800">Reservations Inventory refused with a conflict (last 7 days)</h3>
+    <p class="text-xs text-slate-500">No order was created. A clean-up task releases anything Inventory holds for that order reference (see Stock clean-up below).</p>
+    <ul class="mt-2 space-y-1 text-xs">{{#each conflicts}}<li><span class="text-slate-500">{{formatDateTime created_at}}</span> · {{message}}</li>{{/each}}</ul></div>{{/if}}
+</section>
+
+<section class="mb-6 grid gap-4 lg:grid-cols-2">
+  <form method="POST" action="{{base}}/dispatch" class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+    <input type="hidden" name="_csrf" value="{{csrfToken}}">
+    <h2 class="font-semibold text-slate-900">Send pending events now</h2>
+    <p class="mt-1 text-xs text-slate-500">The dispatcher runs every 20 seconds by itself. Use this to send right away. Only applications in live mode receive anything.</p>
+    <button class="mt-3 rounded-lg bg-violet-700 px-4 py-2 text-sm font-medium text-white hover:bg-violet-800" {{#unless anyLive}}disabled{{/unless}}>Send pending events</button>
+  </form>
+  <form method="POST" action="{{base}}/retry-dead" class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+    <input type="hidden" name="_csrf" value="{{csrfToken}}">
+    <h2 class="font-semibold text-slate-900">Retry all dead letters</h2>
+    <p class="mt-1 text-xs text-slate-500">Starts a fresh retry schedule for every dead live event. Say why (it is written to the audit log).</p>
+    <div class="mt-3 flex gap-2"><input name="reason" required minlength="5" maxlength="200" placeholder="Reason, e.g. Accounting is back online" aria-label="Reason to retry all dead letters" class="min-w-0 flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm"><button class="rounded-lg border border-red-300 px-4 py-2 text-sm font-medium text-red-700 hover:bg-red-50">Retry all</button></div>
+  </form>
+</section>
+
+{{#if unmatched.length}}
+<section class="mb-6 rounded-xl border border-red-200 bg-white shadow-sm" data-unmatched="1">
+  <div class="flex items-center justify-between border-b border-red-100 px-4 py-3"><h2 class="font-semibold text-red-800">Completed sales with no confirmation after {{reconHours}} hours</h2><a href="{{base}}/reconciliation?problems=1" class="text-sm text-violet-700 hover:underline">Open the report</a></div>
+  <div class="overflow-x-auto"><table class="stack min-w-full text-sm"><tbody class="divide-y divide-slate-100">
+    {{#each unmatched}}<tr><td class="px-4 py-2 font-mono">{{transaction_no}}</td><td class="px-4 py-2">{{peso net_amount}}</td><td class="px-4 py-2 text-xs text-slate-500">{{formatDateTime completed_at}}</td><td class="px-4 py-2 text-xs">Inventory {{lookup (lookup deliveries "johnvivz_inventory") "state"}} · Accounting {{lookup (lookup deliveries "johnvivz_accounting") "state"}}</td></tr>{{/each}}
+  </tbody></table></div>
+</section>
+{{/if}}
+
+<section class="mb-6 rounded-xl border border-slate-200 bg-white shadow-sm" id="outbox">
+  <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 px-4 py-3">
+    <h2 class="font-semibold text-slate-900">Outbox: events CRM sends</h2>
+    <form method="GET" action="{{base}}" class="flex items-center gap-2 text-sm"><input type="hidden" name="inbox" value="{{inboxStatus}}"><label class="sr-only" for="outbox-filter">Status</label><select id="outbox-filter" name="outbox" class="rounded border border-slate-300 px-2 py-1 text-sm"><option value="">All (dead letters first)</option>{{#each outboxStatuses}}<option value="{{value}}" {{#if (eq value @root.outboxStatus)}}selected{{/if}}>{{label}}</option>{{/each}}</select><button class="rounded border border-slate-300 px-2 py-1 hover:bg-slate-50">Filter</button></form>
+  </div>
+  {{#if outbox.length}}
+  <div class="overflow-x-auto"><table class="stack min-w-full text-sm">
+    <thead class="bg-slate-50 text-left text-xs font-medium uppercase tracking-wide text-slate-500"><tr><th class="px-4 py-2">Event</th><th class="px-4 py-2">To</th><th class="px-4 py-2">Record</th><th class="px-4 py-2">Status</th><th class="px-4 py-2 text-right">Tries</th><th class="px-4 py-2">Next try</th><th class="px-4 py-2">Last error</th><th class="px-4 py-2">Created</th><th class="px-4 py-2"></th></tr></thead>
+    <tbody class="divide-y divide-slate-100 align-top">
+    {{#each outbox}}
+      <tr data-outbox="{{id}}" data-status="{{status}}">
+        <td class="px-4 py-2 font-mono text-xs">{{event_type}}</td><td class="px-4 py-2 text-xs">{{target}}</td><td class="px-4 py-2 font-mono text-xs text-slate-500">{{entity_id}}</td>
+        <td class="px-4 py-2">{{integrationBadge status}}</td><td class="px-4 py-2 text-right tabular-nums">{{attempts}}</td>
+        <td class="px-4 py-2 text-xs text-slate-500">{{#if next_attempt_at}}{{formatDateTime next_attempt_at}}{{else}}—{{/if}}</td>
+        <td class="max-w-xs break-words px-4 py-2 text-xs text-red-700">{{last_error}}</td><td class="px-4 py-2 text-xs text-slate-500">{{formatDateTime created_at}}</td>
+        <td class="px-4 py-2 text-right">{{#if (eq status "dead")}}<form method="POST" action="{{../base}}/outbox/{{id}}/retry"><input type="hidden" name="_csrf" value="{{@root.csrfToken}}"><button class="rounded border border-slate-300 px-2 py-1 text-xs hover:bg-slate-50">Retry</button></form>{{/if}}{{#if (eq status "failed")}}<form method="POST" action="{{../base}}/outbox/{{id}}/retry"><input type="hidden" name="_csrf" value="{{@root.csrfToken}}"><button class="rounded border border-slate-300 px-2 py-1 text-xs hover:bg-slate-50">Retry now</button></form>{{/if}}</td>
+      </tr>
+    {{/each}}
+    </tbody></table></div>
+  {{else}}<p class="px-6 py-8 text-center text-sm text-slate-500">No outbox events{{#if outboxStatus}} with this status{{/if}}.</p>{{/if}}
+</section>
+
+<section class="mb-6 rounded-xl border border-slate-200 bg-white shadow-sm" id="inbox">
+  <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 px-4 py-3">
+    <h2 class="font-semibold text-slate-900">Inbox: events CRM receives</h2>
+    <form method="GET" action="{{base}}" class="flex items-center gap-2 text-sm"><input type="hidden" name="outbox" value="{{outboxStatus}}"><label class="sr-only" for="inbox-filter">Status</label><select id="inbox-filter" name="inbox" class="rounded border border-slate-300 px-2 py-1 text-sm"><option value="">All (problems first)</option>{{#each inboxStatuses}}<option value="{{value}}" {{#if (eq value @root.inboxStatus)}}selected{{/if}}>{{label}}</option>{{/each}}</select><button class="rounded border border-slate-300 px-2 py-1 hover:bg-slate-50">Filter</button></form>
+  </div>
+  {{#if inbox.length}}
+  <div class="overflow-x-auto"><table class="stack min-w-full text-sm">
+    <thead class="bg-slate-50 text-left text-xs font-medium uppercase tracking-wide text-slate-500"><tr><th class="px-4 py-2">Event</th><th class="px-4 py-2">From</th><th class="px-4 py-2">Record</th><th class="px-4 py-2">Result</th><th class="px-4 py-2 text-right">Tries</th><th class="px-4 py-2">Note</th><th class="px-4 py-2">Received</th><th class="px-4 py-2"></th></tr></thead>
+    <tbody class="divide-y divide-slate-100 align-top">
+    {{#each inbox}}
+      <tr data-inbox="{{id}}" data-status="{{status}}">
+        <td class="px-4 py-2 font-mono text-xs">{{event_type}}</td><td class="px-4 py-2 text-xs">{{source}}</td><td class="px-4 py-2 font-mono text-xs text-slate-500">{{entity_id}}</td>
+        <td class="px-4 py-2">{{integrationBadge status}}</td><td class="px-4 py-2 text-right tabular-nums">{{attempts}}</td>
+        <td class="max-w-xs break-words px-4 py-2 text-xs text-slate-600">{{last_error}}</td><td class="px-4 py-2 text-xs text-slate-500">{{formatDateTime received_at}}</td>
+        <td class="px-4 py-2 text-right">{{#if (eq status "ignored")}}<form method="POST" action="{{../base}}/inbox/{{id}}/reprocess"><input type="hidden" name="_csrf" value="{{@root.csrfToken}}"><button class="rounded border border-slate-300 px-2 py-1 text-xs hover:bg-slate-50" title="Run it again (for example after a feature was switched on)">Reprocess</button></form>{{/if}}{{#if (eq status "dead")}}<form method="POST" action="{{../base}}/inbox/{{id}}/reprocess"><input type="hidden" name="_csrf" value="{{@root.csrfToken}}"><button class="rounded border border-slate-300 px-2 py-1 text-xs hover:bg-slate-50">Reprocess</button></form>{{/if}}{{#if (eq status "failed")}}<form method="POST" action="{{../base}}/inbox/{{id}}/reprocess"><input type="hidden" name="_csrf" value="{{@root.csrfToken}}"><button class="rounded border border-slate-300 px-2 py-1 text-xs hover:bg-slate-50">Reprocess</button></form>{{/if}}</td>
+      </tr>
+    {{/each}}
+    </tbody></table></div>
+  {{else}}<p class="px-6 py-8 text-center text-sm text-slate-500">No inbound events{{#if inboxStatus}} with this status{{/if}}.</p>{{/if}}
+</section>
+
+{{#if compensations.length}}
+<section class="mb-6 rounded-xl border border-slate-200 bg-white shadow-sm" id="compensations">
+  <h2 class="border-b border-slate-100 px-4 py-3 font-semibold text-slate-900">Stock clean-up tasks</h2>
+  <p class="px-4 pt-3 text-xs text-slate-500">Created when a checkout failed after Inventory had reserved stock, or when a reservation answer never arrived. They give the stock back and retry on the same delays as the outbox.</p>
+  <div class="overflow-x-auto"><table class="stack min-w-full text-sm">
+    <thead class="bg-slate-50 text-left text-xs font-medium uppercase tracking-wide text-slate-500"><tr><th class="px-4 py-2">Task</th><th class="px-4 py-2">Order</th><th class="px-4 py-2">Reservation</th><th class="px-4 py-2">Status</th><th class="px-4 py-2 text-right">Tries</th><th class="px-4 py-2">Reason / last error</th><th class="px-4 py-2"></th></tr></thead>
+    <tbody class="divide-y divide-slate-100 align-top">
+    {{#each compensations}}
+      <tr data-compensation="{{id}}"><td class="px-4 py-2 font-mono text-xs">{{kind}}</td><td class="px-4 py-2 font-mono text-xs">{{order_id}}</td><td class="px-4 py-2 font-mono text-xs">{{reservation_ref}}</td><td class="px-4 py-2">{{integrationBadge status}}</td><td class="px-4 py-2 text-right tabular-nums">{{attempts}}</td>
+        <td class="max-w-xs break-words px-4 py-2 text-xs text-slate-600">{{reason}}{{#if last_error}}<p class="text-red-700">{{last_error}}</p>{{/if}}</td>
+        <td class="px-4 py-2 text-right">{{#if (eq status "dead")}}<form method="POST" action="{{../base}}/compensations/{{id}}/retry"><input type="hidden" name="_csrf" value="{{@root.csrfToken}}"><button class="rounded border border-slate-300 px-2 py-1 text-xs hover:bg-slate-50">Retry</button></form>{{/if}}</td></tr>
+    {{/each}}
+    </tbody></table></div>
+</section>
+{{/if}}
+
+<section class="mb-6 rounded-xl border border-slate-200 bg-white shadow-sm" id="calls">
+  <div class="flex items-center justify-between border-b border-slate-100 px-4 py-3"><h2 class="font-semibold text-slate-900">Recent calls</h2><a href="{{base}}/reconciliation" class="text-sm text-violet-700 hover:underline">Sales reconciliation report</a></div>
+  {{#if logs.length}}
+  <div class="overflow-x-auto"><table class="stack min-w-full text-sm">
+    <thead class="bg-slate-50 text-left text-xs font-medium uppercase tracking-wide text-slate-500"><tr><th class="px-4 py-2">When</th><th class="px-4 py-2">Kind</th><th class="px-4 py-2">Application</th><th class="px-4 py-2">Call</th><th class="px-4 py-2">Mode</th><th class="px-4 py-2">Result</th><th class="px-4 py-2">Message</th></tr></thead>
+    <tbody class="divide-y divide-slate-100 align-top">
+    {{#each logs}}
+      <tr><td class="whitespace-nowrap px-4 py-2 text-xs text-slate-500">{{formatDateTime created_at}}</td><td class="px-4 py-2 text-xs">{{direction}}</td><td class="px-4 py-2 font-mono text-xs">{{system}}</td><td class="px-4 py-2 font-mono text-xs">{{http_method}} {{endpoint}}</td><td class="px-4 py-2">{{integrationBadge mode}}</td>
+        <td class="px-4 py-2 text-xs">{{#if success}}<span class="text-emerald-700">OK{{#if http_status}} {{http_status}}{{/if}}</span>{{else}}<span class="text-red-700">Failed{{#if http_status}} {{http_status}}{{/if}}</span>{{/if}}{{#if duration_ms}} <span class="text-slate-400">{{duration_ms}} ms</span>{{/if}}</td>
+        <td class="max-w-sm break-words px-4 py-2 text-xs text-slate-600">{{message}}</td></tr>
+    {{/each}}
+    </tbody></table></div>
+  {{else}}<p class="px-6 py-8 text-center text-sm text-slate-500">No calls recorded yet.</p>{{/if}}
+</section>
+
+{{#if overview.mockSnapshots.products}}<p class="mb-6 text-xs text-slate-500">The product snapshot still holds {{overview.mockSnapshots.products}} row(s) from the MOCK Inventory and the HR references {{overview.mockSnapshots.employees}} from the MOCK HR fixture. They stay flagged as mock and are never mixed with live rows.</p>{{/if}}
+{{> layout_bottom}}

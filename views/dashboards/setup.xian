@@ -1,0 +1,20 @@
+{{> layout_top welcome=true welcomeText="Initial setup and system administration for JOHNVIVZ CRM."}}
+<p class="mb-6 max-w-3xl text-sm text-slate-600">Initial setup for JOHNVIVZ CRM. Day-to-day configuration, assignments and escalations belong to the CRM Manager. This account has no access to customers or cases.</p>
+<div class="grid grid-cols-2 gap-4 lg:grid-cols-4">
+  {{> stat label="Active case categories" value=counts.categories href="/setup/categories"}}
+  {{> stat label="Active response templates" value=counts.templates href="/setup/templates"}}
+  {{> stat label="Staff logins" value=counts.staff href="/setup/staff" hint=(concat counts.teams " team(s)")}}
+  {{> stat label="HR employee references" value=counts.employees href="/setup/staff" hint=(concat counts.mock_employees " from the MOCK HR fixture")}}
+  {{> stat label="Denied attempts (7 days)" value=counts.denied_7d href="/setup/audit-logs?outcome=denied" alert=counts.denied_7d}}
+</div>
+<section class="mt-6 rounded-xl border border-slate-200 bg-white p-5 text-sm shadow-sm">
+  <h2 class="mb-2 font-semibold">Integration adapters</h2>
+  <ul class="space-y-1">
+    <li>JOHNVIVZ HR: <strong>{{platform.hrMode}}</strong>{{#if (eq platform.hrMode "mock")}} — staff come from the labelled mock HR fixture; local staff logins are allowed{{/if}}</li>
+    <li>JOHNVIVZ Inventory: <strong>{{platform.inventoryMode}}</strong></li>
+    <li>JOHNVIVZ Accounting: <strong>{{platform.accountingMode}}</strong></li>
+    <li>ESS approvals queue: <strong>{{#if platform.approvalsEnabled}}enabled{{else}}disabled (APPROVALS_ENABLED=false){{/if}}</strong> · <a href="/setup/approvals" class="text-violet-700 hover:underline">Mock ESS requests</a></li>
+  </ul>
+  <p class="mt-2 text-xs text-slate-500">Modes are set in .env (INTEGRATION_HR_MODE, INTEGRATION_INVENTORY_MODE, INTEGRATION_ACCOUNTING_MODE). Switch an application to live only after its team has confirmed docs/integration-contract.md. <a href="/setup/integration" class="text-violet-700 hover:underline">Open Integration Health</a>.</p>
+</section>
+{{> layout_bottom}}

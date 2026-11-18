@@ -1,0 +1,37 @@
+{{> layout_top}}
+{{> area_tabs}}
+<a href="/crm/campaigns" class="mb-4 inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-700">{{icon "arrow-left" "h-4 w-4"}} Back to campaigns</a>
+<div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+  <div class="space-y-6 lg:col-span-2">
+    <section class="rounded-xl border border-slate-200 bg-white p-5 text-sm shadow-sm">
+      <p class="font-mono text-xs text-slate-500">{{c.campaign_code}} · {{c.channel_label}}{{#if c.is_demo}} {{demoBadge}}{{/if}}</p>
+      <h2 class="mt-1 text-lg font-semibold">{{c.name}} <span class="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-700">{{c.status_label}}</span></h2>
+      <p class="mt-1 text-slate-600">{{formatDate c.start_date}} – {{formatDate c.end_date}}</p>
+      {{#if c.description}}<p class="mt-3 whitespace-pre-line text-slate-700">{{c.description}}</p>{{/if}}
+    </section>
+    <section class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+      <h3 class="mb-3 font-semibold">Results (from real orders)</h3>
+      <div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        {{> stat label="Promotion uses" value=c.results.redemptions}}
+        {{> stat label="Discount given" value=c.results.discount_given money=true}}
+        {{> stat label="Orders" value=c.results.orders}}
+        {{> stat label="Completed sales" value=c.results.sales money=true hint=(concat c.results.completed_orders " completed order(s)")}}
+        {{> stat label="Customers reached" value=c.results.customers hint="distinct customers who used a promotion"}}
+        {{> stat label="Average completed order" value=c.results.avg_order money=true}}
+      </div>
+      {{#if c.results.includes_demo}}<p class="mt-3 rounded bg-amber-50 px-2 py-1 text-xs text-amber-800" data-includes-demo="1">These results include demo orders.</p>{{/if}}
+      <p class="mt-3 text-xs text-slate-500">Only metrics that real data can answer are shown. There are no "sent" or "opened" figures because the CRM does not send messages yet.</p>
+    </section>
+    <section class="rounded-xl border border-slate-200 bg-white shadow-sm">
+      <div class="flex items-center justify-between border-b border-slate-100 px-4 py-3"><h3 class="font-semibold">Promotions in this campaign</h3>{{#if canCancel}}<a href="/crm/promotions/new?campaign_id={{c.id}}" class="text-sm text-violet-700 hover:underline">Add a promotion</a>{{/if}}</div>
+      {{#if promotions.length}}<ul class="divide-y divide-slate-100 text-sm">{{#each promotions}}<li class="flex flex-wrap items-center justify-between gap-2 px-4 py-2"><span><span class="font-mono font-semibold">{{promo_code}}</span> · {{name}}</span><span class="text-xs text-slate-500">{{status_label}} · used {{used_count}}×</span></li>{{/each}}</ul>
+      {{else}}<p class="px-4 py-6 text-center text-sm text-slate-500">No promotions yet.</p>{{/if}}
+    </section>
+  </div>
+  <aside class="space-y-6">
+    {{#if canActivate}}<section class="rounded-xl border border-slate-200 bg-white p-5 text-sm shadow-sm"><form method="POST" action="/crm/campaigns/{{c.id}}/activate"><input type="hidden" name="_csrf" value="{{csrfToken}}"><button class="w-full rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700">Activate</button></form></section>{{/if}}
+    {{#if canEnd}}<section class="rounded-xl border border-slate-200 bg-white p-5 text-sm shadow-sm"><form method="POST" action="/crm/campaigns/{{c.id}}/end" onsubmit="return confirm('End this campaign now?');"><input type="hidden" name="_csrf" value="{{csrfToken}}"><button class="w-full rounded-lg border border-slate-300 px-4 py-2 text-sm hover:bg-slate-50">End campaign</button></form></section>{{/if}}
+    {{#if canCancel}}<section class="rounded-xl border border-slate-200 bg-white p-5 text-sm shadow-sm"><form method="POST" action="/crm/campaigns/{{c.id}}/cancel" onsubmit="return confirm('Cancel this campaign?');"><input type="hidden" name="_csrf" value="{{csrfToken}}"><button class="w-full rounded-lg border border-red-300 px-4 py-2 text-sm text-red-700 hover:bg-red-50">Cancel campaign</button></form></section>{{/if}}
+  </aside>
+</div>
+{{> layout_bottom}}

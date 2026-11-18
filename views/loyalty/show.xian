@@ -1,0 +1,20 @@
+{{> layout_top}}
+{{> area_tabs}}
+<p class="mb-3 text-sm"><a href="/crm/loyalty" class="text-violet-700 hover:underline">← Loyalty</a> · <a href="/crm/customers/{{customer.id}}" class="text-violet-700 hover:underline">Customer page</a></p>
+<section class="mb-6 rounded-xl border border-slate-200 bg-white p-5 shadow-sm" data-loyalty-card="1">
+  <p class="text-sm font-medium text-slate-900">{{customer.first_name}} {{customer.last_name}} <span class="font-mono text-xs text-slate-500">{{customer.customer_no}}</span> {{#if customer.is_demo}}{{demoBadge}}{{/if}}</p>
+  <p class="mt-2 text-3xl font-semibold">{{loyalty.balance}} <span class="text-base font-normal text-slate-600">points</span></p>
+  <p class="text-sm text-slate-600">Worth {{peso loyalty.worth}} off a later order.</p>
+  <p class="mt-2 text-xs text-slate-500">{{rules}}</p>
+</section>
+<section class="rounded-xl border border-slate-200 bg-white shadow-sm">
+  <h2 class="border-b border-slate-100 px-4 py-3 font-semibold text-slate-900">Every earn, redemption, reversal and return</h2>
+  {{#if loyalty.transactions.length}}
+  <div class="overflow-x-auto"><table class="stack min-w-full text-sm">
+    <thead class="bg-slate-50 text-left text-xs font-medium uppercase tracking-wide text-slate-500"><tr><th class="px-4 py-2">When</th><th class="px-4 py-2">What</th><th class="px-4 py-2 text-right">Points</th><th class="px-4 py-2">Details</th></tr></thead>
+    <tbody class="divide-y divide-slate-100">
+    {{#each loyalty.transactions}}<tr data-txn="{{txn_type}}"><td class="whitespace-nowrap px-4 py-2 text-xs text-slate-500">{{formatDateTime created_at}}</td><td class="px-4 py-2">{{label}}</td><td class="px-4 py-2 text-right font-medium tabular-nums">{{#if (gt points 0)}}+{{/if}}{{points}}</td><td class="px-4 py-2 text-xs text-slate-600">{{reason}}</td></tr>{{/each}}
+    </tbody></table></div>
+  {{else}}<p class="px-6 py-10 text-center text-sm text-slate-500">No loyalty activity yet.</p>{{/if}}
+</section>
+{{> layout_bottom}}

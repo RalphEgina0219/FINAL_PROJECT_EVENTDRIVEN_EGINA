@@ -1,0 +1,15 @@
+{{> layout_top}}
+<a href="/portal/inquiries" class="mb-4 inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-700">{{icon "arrow-left" "h-4 w-4"}} Back to my inquiries</a>
+<div class="max-w-3xl space-y-4">
+  <section class="rounded-xl border border-slate-200 bg-white p-5 text-sm shadow-sm">
+    <p class="font-mono text-xs text-slate-500">{{i.inquiry_no}} · {{formatDateTime i.created_at}} · {{#if (eq i.status "open")}}Waiting for an answer{{else}}{{i.status_label}}{{/if}}</p>
+    <h2 class="mt-1 text-lg font-semibold text-slate-900">{{i.subject}}</h2>
+    <p class="mt-3 whitespace-pre-line text-slate-700">{{i.question}}</p>
+  </section>
+  {{#if i.answer}}
+  <section class="rounded-xl border border-emerald-200 bg-emerald-50 p-5 text-sm shadow-sm"><h3 class="font-semibold text-emerald-900">Our answer</h3><p class="mt-2 whitespace-pre-line text-emerald-950">{{i.answer}}</p><p class="mt-2 text-xs text-emerald-800">{{formatDateTime i.answered_at}}</p></section>
+  {{else}}{{#if (eq i.status "open")}}<p class="rounded-lg bg-amber-50 px-4 py-3 text-sm text-amber-900">We received your question. You will be notified when it is answered.</p>{{/if}}{{/if}}
+  {{#if i.converted_case_no}}<section class="rounded-xl border border-indigo-200 bg-indigo-50 p-5 text-sm shadow-sm"><p class="text-indigo-900">Your inquiry needed more attention, so we opened case <a href="/portal/cases/{{i.converted_case_id}}" class="font-mono font-semibold underline">{{i.converted_case_no}}</a>. You can follow it and reply there.</p></section>{{/if}}
+  {{#if i.answer}}<p class="text-sm text-slate-500">Still need help? <a href="/portal/cases/new" class="text-violet-700 hover:underline">Submit a complaint or request</a> or <a href="/portal/inquiries" class="text-violet-700 hover:underline">ask another question</a>.</p>{{/if}}
+</div>
+{{> layout_bottom}}

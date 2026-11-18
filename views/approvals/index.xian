@@ -1,0 +1,40 @@
+{{> layout_top}}
+{{> settings_tabs}}
+<p class="mb-4 max-w-3xl text-xs text-slate-500">Employee requests (leave, attendance correction, overtime) sent by HR / ESS. HR owns the records: CRM only routes the request, records your decision and sends it back to HR. Nobody decides their own request, and nothing is ever approved automatically.</p>
+<div class="mb-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
+  {{> stat label="Waiting for me" value=counts.mine href="/crm/approvals?view=queue" alert=counts.mine}}
+  {{#if isManager}}{{> stat label="Exceptions (no valid approver)" value=counts.exceptions href="/crm/approvals?view=exceptions" alert=counts.exceptions}}{{/if}}
+  {{> stat label="Pending in total" value=counts.pending href="/crm/approvals?view=all&status=pending"}}
+</div>
+<nav class="mb-3 flex flex-wrap gap-1 text-sm" aria-label="Queue views">
+  {{#each views}}<a href="/crm/approvals?view={{value}}" class="rounded-full border px-3 py-1 {{#if active}}border-violet-600 bg-violet-600 text-white{{else}}border-slate-300 text-slate-700 hover:bg-slate-50{{/if}}">{{label}}</a>{{/each}}
+</nav>
+<form method="GET" action="/crm/approvals" class="mb-4 flex flex-wrap items-end gap-2 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+  <input type="hidden" name="view" value="{{view}}">
+  <div class="min-w-0 flex-1"><label class="text-xs font-medium text-slate-500" for="q">Search</label><input id="q" name="q" value="{{q}}" placeholder="Request id, employee or summary" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"></div>
+  <div><label class="text-xs font-medium text-slate-500" for="type">Type</label><select id="type" name="type" class="mt-1 rounded-lg border border-slate-300 px-3 py-2 text-sm"><option value="">All</option>{{#each typeOptions}}<option value="{{value}}" {{#if (eq value @root.type)}}selected{{/if}}>{{label}}</option>{{/each}}</select></div>
+  <div><label class="text-xs font-medium text-slate-500" for="status">Status</label><select id="status" name="status" class="mt-1 rounded-lg border border-slate-300 px-3 py-2 text-sm"><option value="">All</option>{{#each statusOptions}}<option value="{{value}}" {{#if (eq value @root.status)}}selected{{/if}}>{{label}}</option>{{/each}}</select></div>
+  <button class="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700">Filter</button>
+  {{#if hasFilters}}<a href="/crm/approvals?view={{view}}" class="rounded-lg border border-slate-300 px-4 py-2 text-sm hover:bg-slate-50">Clear</a>{{/if}}
+</form>
+<section class="rounded-xl border border-slate-200 bg-white shadow-sm">
+  {{#if rows.length}}
+  <div class="overflow-x-auto"><table class="stack min-w-full text-sm">
+    <thead class="bg-slate-50 text-left text-xs font-medium uppercase tracking-wide text-slate-500"><tr><th class="px-4 py-2">Request</th><th class="px-4 py-2">Employee</th><th class="px-4 py-2">Type</th><th class="px-4 py-2">Summary</th><th class="px-4 py-2">Routed to</th><th class="px-4 py-2">Received</th><th class="px-4 py-2">Status</th></tr></thead>
+    <tbody class="divide-y divide-slate-100 align-top">
+    {{#each rows}}
+      <tr data-request="{{request_id}}" data-status="{{status}}">
+        <td class="px-4 py-3"><a href="/crm/approvals/{{id}}" class="font-mono text-xs font-medium text-violet-700 hover:underline">{{request_id}}</a>{{#if is_mock}} <span class="rounded border border-dashed border-amber-500 bg-amber-50 px-1 text-[10px] font-semibold uppercase text-amber-800" title="Sent by the mock ESS, not by real HR">Mock</span>{{/if}}</td>
+        <td class="px-4 py-3">{{#if employee_name}}{{employee_name}}{{else}}<span class="text-slate-500">Unknown employee</span>{{/if}}<p class="font-mono text-xs text-slate-500">{{requester_employee_id}}</p></td>
+        <td class="px-4 py-3">{{type_label}}</td>
+        <td class="px-4 py-3">{{summary}}{{#if exception_reason}}{{#if (eq status "exception")}}<p class="text-xs text-amber-800">{{exception_reason}}</p>{{/if}}{{/if}}</td>
+        <td class="px-4 py-3 text-xs">{{#if approver_label}}{{approver_label}}{{else}}<span class="text-slate-400">nobody</span>{{/if}}</td>
+        <td class="whitespace-nowrap px-4 py-3 text-xs text-slate-500">{{formatDateTime received_at}}</td>
+        <td class="px-4 py-3">{{approvalBadge status}}</td>
+      </tr>
+    {{/each}}
+    </tbody></table></div>
+  {{else}}<p class="px-6 py-10 text-center text-sm text-slate-500">{{#if hasFilters}}No requests match.{{else}}{{#if (eq view "queue")}}Nothing is waiting for you.{{else}}No requests here.{{/if}}{{/if}}</p>{{/if}}
+  {{> pagination}}
+</section>
+{{> layout_bottom}}

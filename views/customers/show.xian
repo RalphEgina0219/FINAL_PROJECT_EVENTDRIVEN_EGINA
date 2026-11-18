@@ -1,0 +1,185 @@
+{{> layout_top}}
+<a href="/crm/customers" class="mb-4 inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-700">{{icon "arrow-left" "h-4 w-4"}} Back to customers</a>
+<div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+
+  <div class="space-y-6">
+    <section class="rounded-xl border border-slate-200 bg-white p-5 text-sm shadow-sm">
+      <h2 class="font-semibold">{{c.first_name}} {{c.last_name}} {{#if c.is_demo}}{{demoBadge}}{{/if}}</h2>
+      <p class="text-xs text-slate-500">{{c.customer_no}} · ID {{c.customer_id}}</p>
+      <dl class="mt-4 space-y-2">
+        <div class="flex justify-between gap-2"><dt class="text-slate-500">Email</dt><dd class="text-right">{{#if c.email_shown}}{{c.email_shown}}{{else}}—{{/if}}</dd></div>
+        <div class="flex justify-between gap-2"><dt class="text-slate-500">Mobile</dt><dd class="text-right">{{#if c.mobile_shown}}{{c.mobile_shown}}{{else}}—{{/if}}</dd></div>
+        <div class="flex justify-between gap-2"><dt class="text-slate-500">Type</dt><dd>{{c.customer_type}}</dd></div>
+        <div class="flex justify-between gap-2"><dt class="text-slate-500">Source</dt><dd>{{c.source_label}}</dd></div>
+        <div class="flex justify-between gap-2"><dt class="text-slate-500">Status</dt><dd>{{c.status}}</dd></div>
+        <div class="flex justify-between gap-2"><dt class="text-slate-500">Portal account</dt><dd>{{#if c.account_status}}{{c.account_status}}{{else}}none (walk-in){{/if}}</dd></div>
+        <div class="flex justify-between gap-2"><dt class="text-slate-500">Segment</dt><dd>{{#if c.segment_name}}{{c.segment_name}}{{else}}not computed yet{{/if}}</dd></div>
+        <div class="flex justify-between gap-2"><dt class="text-slate-500">Customer since</dt><dd>{{formatDate c.created_at}}</dd></div>
+      </dl>
+      {{#if c.notes}}<div class="mt-3 border-t border-slate-100 pt-3"><p class="text-xs font-medium uppercase text-slate-500">Staff notes</p><p class="mt-1 whitespace-pre-line text-slate-700">{{c.notes}}</p></div>{{/if}}
+      {{#if canEdit}}
+      <details class="mt-4 border-t border-slate-100 pt-3"><summary class="cursor-pointer text-sm font-medium text-violet-700">Edit profile</summary>
+        <form method="POST" action="/crm/customers/{{c.id}}/profile" class="mt-3 space-y-2">
+          <input type="hidden" name="_csrf" value="{{csrfToken}}">
+          <input name="first_name" value="{{c.first_name}}" required minlength="2" maxlength="80" aria-label="First name" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm">
+          <input name="last_name" value="{{c.last_name}}" required minlength="2" maxlength="80" aria-label="Last name" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm">
+          <select name="customer_type" aria-label="Customer type" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm">{{#each typeOptions}}<option value="{{value}}" {{#if sel}}selected{{/if}}>{{label}}</option>{{/each}}</select>
+          <select name="status" aria-label="Status" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"><option value="active" {{#if (eq c.status "active")}}selected{{/if}}>Active</option><option value="inactive" {{#if (eq c.status "inactive")}}selected{{/if}}>Inactive</option></select>
+          <textarea name="notes" rows="3" maxlength="2000" placeholder="Staff notes (the customer cannot see them)" aria-label="Staff notes" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm">{{c.notes}}</textarea>
+          <button class="w-full rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700">Save profile</button>
+        </form>
+      </details>
+      {{/if}}
+    </section>
+
+    <section class="rounded-xl border border-slate-200 bg-white p-5 text-sm shadow-sm" id="assignment">
+      <h2 class="mb-2 font-semibold">Assigned agent</h2>
+      {{#if c.assignment}}
+        <p><span class="font-medium">{{c.assignment.agent_name}}</span> <span class="text-xs text-slate-500">since {{formatDate c.assignment.assigned_at}}{{#if c.assignment.assigned_by_name}} · by {{c.assignment.assigned_by_name}}{{/if}}</span></p>
+        {{#if c.assignment.note}}<p class="text-xs text-slate-500">“{{c.assignment.note}}”</p>{{/if}}
+      {{else}}<p class="text-amber-700">No agent assigned yet.</p>{{/if}}
+      {{#if canAssign}}
+      <form method="POST" action="/crm/customers/{{c.id}}/assign" class="mt-3 space-y-2">
+        <input type="hidden" name="_csrf" value="{{csrfToken}}">
+        <select name="agent_id" required aria-label="Agent" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"><option value="">Choose an agent</option>{{#each agents}}<option value="{{id}}" {{#if current}}disabled{{/if}}>{{name}} — {{team_name}} · {{active_count}} active{{#if current}} (current){{/if}}</option>{{/each}}</select>
+        <input name="note" maxlength="255" placeholder="Note (optional)" aria-label="Note" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm">
+        <button class="w-full rounded-lg bg-violet-700 px-4 py-2 text-sm font-medium text-white hover:bg-violet-800">{{#if c.assignment}}Reassign{{else}}Assign{{/if}} agent</button>
+      </form>
+      {{#if c.assignment}}<form method="POST" action="/crm/customers/{{c.id}}/unassign" class="mt-2" onsubmit="return confirm('End this assignment?');"><input type="hidden" name="_csrf" value="{{csrfToken}}"><button class="text-xs text-slate-500 underline hover:text-slate-700">End assignment</button></form>{{/if}}
+      {{/if}}
+      {{#if c.assignmentHistory.length}}<details class="mt-3 text-xs text-slate-500"><summary class="cursor-pointer">Assignment history</summary><ul class="mt-1 space-y-1">{{#each c.assignmentHistory}}<li>{{agent_name}} · {{formatDate assigned_at}} → {{#if ended_at}}{{formatDate ended_at}}{{else}}now{{/if}}</li>{{/each}}</ul></details>{{/if}}
+    </section>
+
+    <section class="rounded-xl border border-slate-200 bg-white p-5 text-sm shadow-sm">
+      <h2 class="mb-2 font-semibold">Consents on record</h2>
+      <ul class="space-y-1 text-xs text-slate-600">{{#each c.consents}}<li>{{consent_type}} · {{#if granted}}granted{{else}}withdrawn{{/if}} · v{{policy_version}} · {{channel}} · {{#if granted_at}}{{formatDate granted_at}}{{else}}{{formatDate withdrawn_at}}{{/if}}</li>{{else}}<li>None recorded</li>{{/each}}</ul>
+    </section>
+  </div>
+
+  <div class="space-y-6 lg:col-span-2">
+    <section class="rounded-xl border border-slate-200 bg-white p-5 text-sm shadow-sm" id="contacts">
+      <h2 class="mb-3 font-semibold">Contacts</h2>
+      <ul class="divide-y divide-slate-100">
+        {{#each c.contacts}}
+        <li class="flex flex-wrap items-center justify-between gap-2 py-2">
+          <span><span class="text-xs uppercase text-slate-500">{{type_label}}</span> <span class="ml-1">{{value_shown}}</span>{{#if is_primary}} <span class="rounded-full bg-violet-50 px-2 py-0.5 text-xs font-medium text-violet-700 ring-1 ring-inset ring-violet-600/20">Primary</span>{{/if}}</span>
+          {{#if @root.canEdit}}<span class="flex gap-3 text-xs">
+            {{#unless is_primary}}
+            <form method="POST" action="/crm/customers/{{@root.c.id}}/contacts/{{id}}/primary" class="flex items-center gap-1"><input type="hidden" name="_csrf" value="{{@root.csrfToken}}"><button class="text-violet-700 hover:underline">Make primary</button></form>
+            <form method="POST" action="/crm/customers/{{@root.c.id}}/contacts/{{id}}/delete" onsubmit="return confirm('Remove this contact?');"><input type="hidden" name="_csrf" value="{{@root.csrfToken}}"><button class="text-red-600 hover:underline">Remove</button></form>
+            {{/unless}}
+          </span>{{/if}}
+        </li>
+        {{else}}<li class="py-2 text-slate-500">No contacts yet.</li>{{/each}}
+      </ul>
+      {{#if canEdit}}
+      <form method="POST" action="/crm/customers/{{c.id}}/contacts" class="mt-3 grid grid-cols-1 gap-2 rounded-lg bg-slate-50 p-3 sm:grid-cols-4">
+        <input type="hidden" name="_csrf" value="{{csrfToken}}">
+        <select name="contact_type" aria-label="Contact type" class="rounded-lg border border-slate-300 px-3 py-2 text-sm">{{#each contactTypes}}<option value="{{value}}">{{label}}</option>{{/each}}</select>
+        <input name="value" required maxlength="254" placeholder="Value" aria-label="Contact value" class="rounded-lg border border-slate-300 px-3 py-2 text-sm sm:col-span-2">
+        <button class="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700">Add contact</button>
+        <label class="flex items-center gap-2 text-xs text-slate-600 sm:col-span-2"><input type="checkbox" name="make_primary" value="1" class="rounded border-slate-300"> Make it the primary contact of its type</label>
+        <input name="override_reason" maxlength="255" placeholder="Reason (only if the number or email already belongs to another customer)" aria-label="Reason to use a contact that belongs to another customer" class="rounded-lg border border-slate-300 px-3 py-2 text-xs sm:col-span-2">
+      </form>
+      {{#if hasAccount}}<p class="mt-2 text-xs text-slate-500">This customer signs in with their primary email; they change it from their own account.</p>{{/if}}
+      {{/if}}
+    </section>
+
+    <section class="rounded-xl border border-slate-200 bg-white p-5 text-sm shadow-sm" id="addresses">
+      <h2 class="mb-3 font-semibold">Addresses</h2>
+      <ul class="space-y-2">
+        {{#each c.addresses}}
+        <li class="rounded-lg border border-slate-100 p-3">
+          <p><span class="font-medium">{{#if label}}{{label}}{{else}}Address{{/if}}</span>{{#if is_default}} <span class="rounded-full bg-violet-50 px-2 py-0.5 text-xs font-medium text-violet-700 ring-1 ring-inset ring-violet-600/20">Default</span>{{/if}}</p>
+          <p class="text-slate-700">{{line1}}{{#if barangay}}, {{barangay}}{{/if}}{{#if city_municipality}}, {{city_municipality}}{{/if}}{{#if province}}, {{province}}{{/if}}{{#if postal_code}} {{postal_code}}{{/if}}</p>
+          {{#if @root.canEdit}}
+          <details class="mt-2"><summary class="cursor-pointer text-xs text-violet-700">Edit</summary>
+            <form method="POST" action="/crm/customers/{{@root.c.id}}/addresses/{{id}}" class="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2">
+              <input type="hidden" name="_csrf" value="{{@root.csrfToken}}">
+              <input name="label" value="{{label}}" maxlength="40" placeholder="Label (Home, Work…)" aria-label="Label" class="rounded-lg border border-slate-300 px-3 py-2 text-sm">
+              <input name="line1" value="{{line1}}" required minlength="5" maxlength="200" placeholder="House no., street" aria-label="Address line" class="rounded-lg border border-slate-300 px-3 py-2 text-sm">
+              <input name="barangay" value="{{barangay}}" maxlength="100" placeholder="Barangay" aria-label="Barangay" class="rounded-lg border border-slate-300 px-3 py-2 text-sm">
+              <input name="city_municipality" value="{{city_municipality}}" maxlength="100" placeholder="City / municipality" aria-label="City" class="rounded-lg border border-slate-300 px-3 py-2 text-sm">
+              <input name="province" value="{{province}}" maxlength="100" placeholder="Province" aria-label="Province" class="rounded-lg border border-slate-300 px-3 py-2 text-sm">
+              <input name="postal_code" value="{{postal_code}}" maxlength="4" pattern="\d{4}" placeholder="Postal code" aria-label="Postal code" class="rounded-lg border border-slate-300 px-3 py-2 text-sm">
+              <button class="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700 sm:col-span-2">Save address</button>
+            </form>
+            <div class="mt-2 flex gap-3 text-xs">
+              {{#unless is_default}}<form method="POST" action="/crm/customers/{{@root.c.id}}/addresses/{{id}}/default"><input type="hidden" name="_csrf" value="{{@root.csrfToken}}"><button class="text-violet-700 hover:underline">Make default</button></form>{{/unless}}
+              <form method="POST" action="/crm/customers/{{@root.c.id}}/addresses/{{id}}/delete" onsubmit="return confirm('Remove this address?');"><input type="hidden" name="_csrf" value="{{@root.csrfToken}}"><button class="text-red-600 hover:underline">Remove</button></form>
+            </div>
+          </details>
+          {{/if}}
+        </li>
+        {{else}}<li class="text-slate-500">No addresses yet.</li>{{/each}}
+      </ul>
+      {{#if canEdit}}
+      <details class="mt-3"><summary class="cursor-pointer text-sm font-medium text-violet-700">Add an address</summary>
+        <form method="POST" action="/crm/customers/{{c.id}}/addresses" class="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2">
+          <input type="hidden" name="_csrf" value="{{csrfToken}}">
+          <input name="label" maxlength="40" placeholder="Label (Home, Work…)" aria-label="Label" class="rounded-lg border border-slate-300 px-3 py-2 text-sm">
+          <input name="line1" required minlength="5" maxlength="200" placeholder="House no., street" aria-label="Address line" class="rounded-lg border border-slate-300 px-3 py-2 text-sm">
+          <input name="barangay" maxlength="100" placeholder="Barangay" aria-label="Barangay" class="rounded-lg border border-slate-300 px-3 py-2 text-sm">
+          <input name="city_municipality" maxlength="100" placeholder="City / municipality" aria-label="City" class="rounded-lg border border-slate-300 px-3 py-2 text-sm">
+          <input name="province" maxlength="100" placeholder="Province" aria-label="Province" class="rounded-lg border border-slate-300 px-3 py-2 text-sm">
+          <input name="postal_code" maxlength="4" pattern="\d{4}" placeholder="Postal code" aria-label="Postal code" class="rounded-lg border border-slate-300 px-3 py-2 text-sm">
+          <label class="flex items-center gap-2 text-xs text-slate-600 sm:col-span-2"><input type="checkbox" name="is_default" value="1" class="rounded border-slate-300"> Make it the default address</label>
+          <button class="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700 sm:col-span-2">Add address</button>
+        </form>
+      </details>
+      {{/if}}
+    </section>
+
+    <section class="rounded-xl border border-slate-200 bg-white p-5 text-sm shadow-sm" id="preferences">
+      <h2 class="mb-1 font-semibold">Contact preferences and marketing consent</h2>
+      <p class="mb-3 text-xs text-slate-500">Service messages about orders and cases are always sent. Promotions only if the customer agrees.</p>
+      {{#if canEdit}}
+      <form method="POST" action="/crm/customers/{{c.id}}/preferences" class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <input type="hidden" name="_csrf" value="{{csrfToken}}">
+        {{#each prefs.fields}}
+        <div><label class="text-xs font-medium text-slate-600" for="pref-{{key}}">{{label}}</label>
+          {{#if free}}<input id="pref-{{key}}" name="{{key}}" value="{{value}}" maxlength="{{max}}" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm">
+          {{else}}<select id="pref-{{key}}" name="{{key}}" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"><option value="">Not set</option>{{#each options}}<option value="{{value}}" {{#if sel}}selected{{/if}}>{{label}}</option>{{/each}}</select>{{/if}}
+        </div>
+        {{/each}}
+        <label class="flex items-center gap-2"><input type="checkbox" name="marketing_sms" value="1" {{#if prefs.marketing.marketing_sms}}checked{{/if}} class="rounded border-slate-300"> Agrees to promotions by SMS</label>
+        <label class="flex items-center gap-2"><input type="checkbox" name="marketing_email" value="1" {{#if prefs.marketing.marketing_email}}checked{{/if}} class="rounded border-slate-300"> Agrees to promotions by email</label>
+        <div><label class="text-xs font-medium text-slate-600" for="pref-channel">Consent given / withdrawn</label>
+          <select id="pref-channel" name="consent_channel" required class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm">{{#each consentOptions}}<option value="{{value}}">{{label}}</option>{{/each}}</select></div>
+        <button class="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700 sm:col-span-2">Save preferences</button>
+      </form>
+      {{else}}
+      <dl class="space-y-1">{{#each prefs.fields}}<div class="flex justify-between gap-2"><dt class="text-slate-500">{{label}}</dt><dd>{{#if value}}{{value}}{{else}}—{{/if}}</dd></div>{{/each}}</dl>
+      {{/if}}
+    </section>
+
+    <section class="rounded-xl border border-slate-200 bg-white shadow-sm" id="timeline">
+      <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 px-4 py-3"><h2 class="font-semibold">Interaction timeline</h2>
+        <span class="flex flex-wrap gap-2">{{#if canLog}}<a href="/crm/interactions/new?customer_id={{c.id}}" class="rounded-lg bg-violet-700 px-3 py-1.5 text-sm font-medium text-white hover:bg-violet-800">Log interaction</a>{{/if}}
+        {{#if canService}}<a href="/crm/cases/new?customer_id={{c.id}}" class="rounded-lg border border-slate-300 px-3 py-1.5 text-sm hover:bg-slate-50">Open a case</a><a href="/crm/inquiries/new?customer_id={{c.id}}" class="rounded-lg border border-slate-300 px-3 py-1.5 text-sm hover:bg-slate-50">Record an inquiry</a><a href="/crm/follow-ups/new?customer_id={{c.id}}" class="rounded-lg border border-slate-300 px-3 py-1.5 text-sm hover:bg-slate-50">New follow-up</a>{{/if}}</span></div>
+      {{#if timeline.length}}
+      <ol class="divide-y divide-slate-100">
+        {{#each timeline}}
+        <li class="px-4 py-3">
+          <p class="text-xs text-slate-500">{{formatDateTime at}} · {{#if (eq kind "case")}}Case{{else}}{{type}}{{#if direction}} · {{direction}}{{/if}}{{/if}}{{#if by}} · {{by}}{{/if}}</p>
+          <p class="font-medium text-slate-800">{{#if (eq kind "case")}}<a href="/crm/cases/{{case_id}}" class="text-violet-700 hover:underline">{{title}}</a>{{else}}<a href="/crm/interactions/{{id}}" class="hover:underline">{{title}}</a>{{/if}}{{#if (eq kind "interaction")}}{{#if case_no}} <a href="/crm/cases/{{case_id}}" class="font-mono text-xs text-violet-700 hover:underline">{{case_no}}</a>{{/if}}{{/if}}</p>
+          {{#if text}}<p class="text-sm text-slate-600">{{text}}</p>{{/if}}
+        </li>
+        {{/each}}
+      </ol>
+      {{else}}<p class="px-4 py-6 text-center text-slate-500">No interactions logged yet.</p>{{/if}}
+    </section>
+
+    <section class="rounded-xl border border-slate-200 bg-white shadow-sm">
+      <div class="border-b border-slate-100 px-4 py-3"><h2 class="font-semibold">Cases you can see</h2></div>
+      {{> case_table cases=cases base="/crm/cases" showAgent=true emptyText="No cases in your scope for this customer."}}
+    </section>
+  </div>
+  <section class="rounded-xl border border-slate-200 bg-white shadow-sm lg:col-span-3" id="orders">
+    <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 px-4 py-3"><h2 class="font-semibold">Purchase history</h2><span class="text-xs text-slate-600" data-loyalty-balance="1">Loyalty points: <strong>{{loyalty.balance}}</strong>{{#if canSeeLoyalty}} · <a href="/crm/loyalty/{{customer.id}}" class="text-violet-700 hover:underline">history</a>{{/if}}</span>{{#if canOrder}}<a href="/crm/sales/new?customer_id={{c.id}}" class="rounded-lg bg-violet-700 px-3 py-1.5 text-sm font-medium text-white hover:bg-violet-800">New order</a>{{/if}}</div>
+    {{#if orders.length}}<div class="overflow-x-auto"><table class="stack min-w-full text-sm"><thead class="bg-slate-50 text-left text-xs uppercase text-slate-500"><tr><th class="px-4 py-2">Order</th><th class="px-4 py-2">Date</th><th class="px-4 py-2 text-right">Total</th><th class="px-4 py-2">Status</th><th class="px-4 py-2">Payment</th></tr></thead>
+      <tbody class="divide-y divide-slate-100">{{#each orders}}<tr><td class="px-4 py-2"><a href="/crm/sales/orders/{{id}}" class="font-mono font-medium text-violet-700 hover:underline">{{order_no}}</a>{{#if is_demo}} {{demoBadge}}{{/if}}</td><td class="px-4 py-2">{{formatDate created_at}}</td><td class="px-4 py-2 text-right tabular-nums">{{peso grand_total}}</td><td class="px-4 py-2">{{status_label}}</td><td class="px-4 py-2">{{payment_label}}</td></tr>{{/each}}</tbody></table></div>
+    {{else}}<p class="px-4 py-6 text-center text-sm text-slate-500">No orders in your scope for this customer.</p>{{/if}}
+  </section>
+</div>
+{{> layout_bottom}}

@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/png" href="/images/logo-mark.png">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script>
+    // JVz palette. `violet` is kept as an alias of `brand` because ~300 existing classes (bg-violet-700, text-violet-700 ...)
+    // already use it: remapping it re-colours every page. New markup should use `brand` and `navy`.
+    (function () {
+      var brand = { 50: '#eef5ff', 100: '#d9e8ff', 200: '#bcd5ff', 300: '#8ebcff', 400: '#5896ff', 500: '#2a73f5', 600: '#1560e8', 700: '#0f4fcf', 800: '#0d3fa6', 900: '#0b2f7a', 950: '#081f55' };
+      tailwind.config = { theme: { extend: {
+        fontFamily: { sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'] },
+        colors: {
+          brand: brand, violet: brand,
+          navy: { 700: '#123a94', 800: '#0c2a78', 900: '#0a2266', 950: '#061747' },
+          iris: { 100: '#ece8fd', 200: '#d8d0fa', 500: '#6d4fe3', 600: '#5b3ccf' }
+        }
+      } } };
+    })();
+  </script>
+  <link rel="stylesheet" href="/css/jvz-theme.css">
+  <title>{{#if title}}{{title}} · {{/if}}JOHNVIVZ CRM</title>
+</head>

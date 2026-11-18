@@ -1,0 +1,9 @@
+{{#each success_msg}}
+<div class="mb-4 flex items-start gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800" role="status">{{icon "check" "h-5 w-5 shrink-0"}}<span>{{this}}</span></div>
+{{/each}}
+{{#each info_msg}}
+<div class="mb-4 flex items-start gap-2 rounded-lg border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-900" role="status">{{icon "beaker" "h-5 w-5 shrink-0"}}<span>{{this}}</span></div>
+{{/each}}
+{{#each error_msg}}
+<div class="mb-4 flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800" role="alert">{{icon "warning" "h-5 w-5 shrink-0"}}<span>{{this}}</span></div>
+{{/each}}

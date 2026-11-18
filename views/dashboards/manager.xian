@@ -1,0 +1,82 @@
+{{> layout_top welcome=true welcomeText="Here's what is happening with your customers, cases and sales today."}}
+{{> demo_notice}}
+<h2 class="mb-2 text-xs font-semibold uppercase tracking-wider text-slate-500">Customers</h2>
+<div class="grid grid-cols-2 gap-4 lg:grid-cols-4">
+  {{> stat label="Total customers" value=customers.total href="/crm/customers"}}
+  {{> stat label="Active customers" value=customers.active href="/crm/customers"}}
+  {{> stat label="New (last 30 days)" value=customers.new_30d href="/crm/customers"}}
+  {{> stat label="With portal account" value=customers.with_portal href="/crm/customers" hint=(concat customers.demo_count " demo record(s)")}}
+  {{> stat label="Open inquiries" value=inquiries.open href="/crm/inquiries?status=open" alert=inquiries.unclaimed hint=(concat inquiries.unclaimed " with no handler")}}
+  {{> stat label="Overdue follow-ups" value=followUps.overdue href="/crm/follow-ups?status=overdue" alert=followUps.overdue hint=(concat followUps.pending " pending")}}
+</div>
+
+<h2 class="mb-2 mt-6 text-xs font-semibold uppercase tracking-wider text-slate-500">Customer service</h2>
+<div class="grid grid-cols-2 gap-4 lg:grid-cols-4">
+  {{> stat label="Open cases" value=summary.active_count href="/crm/cases?status=active"}}
+  {{> stat label="Escalated" value=summary.escalated_count href="/crm/escalations" alert=summary.escalated_count}}
+  {{> stat label="Overdue (SLA)" value=summary.overdue_count href="/crm/cases?overdue=1" alert=summary.overdue_count}}
+  {{> stat label="Open complaints" value=summary.open_complaints href="/crm/cases?status=active&case_type=complaint"}}
+  {{> stat label="Unassigned" value=summary.unassigned_count href="/crm/cases?agent=unassigned&status=open"}}
+  {{> stat label="Avg. first response" display=(duration times.avg_first_response) icon="clock" tone="sky" hint=(concat times.responded_count " case(s) answered")}}
+  {{> stat label="Customer satisfaction" display=(ratingText ratings.avg ratings.total) icon="star" tone="amber" hint=(concat ratings.total " rating(s)")}}
+  {{> stat label="Resolved / Closed" value=summary.done_count href="/crm/cases?status=closed" hint=(concat summary.resolution_rate "% resolution rate")}}
+</div>
+
+<div class="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-3">
+  <section class="rounded-xl border border-slate-200 bg-white shadow-sm lg:col-span-2">
+    <div class="flex items-center justify-between border-b border-slate-100 px-4 py-3"><h2 class="font-semibold">Escalations waiting</h2><a href="/crm/escalations" class="text-sm text-violet-700 hover:underline">View all</a></div>
+    {{#if escalations.length}}
+    <ul class="divide-y divide-slate-100 text-sm">{{#each escalations}}<li class="flex flex-wrap items-center justify-between gap-2 px-4 py-3"><span><a href="/crm/cases/{{id}}" class="font-medium text-violet-700 hover:underline">{{case_no}}</a> · {{subject}}<span class="block text-xs text-slate-500">{{team_name}} · by {{escalated_by_name}}: “{{reason}}”</span></span><span class="rounded-full bg-rose-50 px-2 py-0.5 text-xs text-rose-700">Level {{escalation_level}}</span></li>{{/each}}</ul>
+    {{else}}<p class="px-4 py-6 text-center text-sm text-slate-500">No pending escalations.</p>{{/if}}
+  </section>
+  <section class="space-y-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+    <h2 class="font-semibold">Action queues</h2>
+    <a href="/crm/escalations" class="flex justify-between rounded-lg border border-slate-100 px-3 py-2 text-sm hover:bg-slate-50"><span>Escalations</span><strong>{{summary.escalated_count}}</strong></a>
+    <a href="/crm/cases?overdue=1" class="flex justify-between rounded-lg border border-slate-100 px-3 py-2 text-sm hover:bg-slate-50"><span>Overdue cases</span><strong>{{summary.overdue_count}}</strong></a>
+    <a href="/crm/approvals" class="flex justify-between rounded-lg border border-slate-100 px-3 py-2 text-sm hover:bg-slate-50" title="Employee requests routed to you by HR (feature switch APPROVALS_ENABLED)"><span>Employee approvals</span>{{#if approvals.enabled}}<strong class="{{#if approvals.mine}}text-red-600{{/if}}">{{approvals.mine}}</strong>{{else}}<span class="text-xs text-slate-500">Not enabled yet</span>{{/if}}</a>
+    {{#if approvals.enabled}}<a href="/crm/approvals?view=exceptions" class="flex justify-between rounded-lg border border-slate-100 px-3 py-2 text-sm hover:bg-slate-50"><span>Approval exceptions (no valid approver)</span><strong class="{{#if approvals.exceptions}}text-red-600{{/if}}">{{approvals.exceptions}}</strong></a>{{/if}}
+    <a href="/crm/settings/integration" class="flex justify-between rounded-lg border border-slate-100 px-3 py-2 text-sm hover:bg-slate-50" title="Dead letters, failed inbound events and stock clean-up tasks that need a person"><span>Failed synchronization</span><strong class="{{#if integration.problems}}text-red-600{{/if}}">{{integration.problems}}</strong></a>
+    <a href="/crm/settings/integration/reconciliation?problems=1" class="flex justify-between rounded-lg border border-slate-100 px-3 py-2 text-sm hover:bg-slate-50"><span>Sales without confirmation (24 h)</span><strong class="{{#if integration.reconciliation.unmatched}}text-red-600{{/if}}">{{integration.reconciliation.unmatched}}</strong></a>
+    <p class="text-xs text-slate-500">Adapters: HR <strong>{{platform.hrMode}}</strong> · Inventory <strong>{{platform.inventoryMode}}</strong> · Accounting <strong>{{platform.accountingMode}}</strong></p>
+  </section>
+</div>
+
+<div class="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-3">
+  <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"><h2 class="mb-3 font-semibold">Cases by category</h2>{{> bars rows=byCategory.rows max=byCategory.max}}</div>
+  <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"><h2 class="mb-3 font-semibold">Active cases by priority</h2>{{> bars rows=byPriority.rows max=byPriority.max}}</div>
+</div>
+
+<section class="mt-6 rounded-xl border border-slate-200 bg-white shadow-sm">
+  <div class="flex items-center justify-between border-b border-slate-100 px-4 py-3"><h2 class="font-semibold">Team performance</h2><a href="/crm/team-performance" class="text-sm text-violet-700 hover:underline">Details</a></div>
+  <div class="overflow-x-auto"><table class="stack min-w-full text-sm">
+    <thead class="bg-slate-50 text-left text-xs font-medium uppercase tracking-wide text-slate-500"><tr><th class="px-4 py-2">Team</th><th class="px-4 py-2">Team Leader</th><th class="px-4 py-2 text-right">Agents</th><th class="px-4 py-2 text-right">Active cases</th><th class="px-4 py-2 text-right">Overdue</th><th class="px-4 py-2 text-right">Escalated</th></tr></thead>
+    <tbody class="divide-y divide-slate-100 tabular-nums">{{#each teams}}<tr><td class="px-4 py-3 font-medium">{{name}} <span class="text-xs text-slate-400">{{team_code}}</span></td><td class="px-4 py-3">{{#if leader_name}}{{leader_name}}{{else}}<span class="text-amber-700">None</span>{{/if}}</td><td class="px-4 py-3 text-right">{{agent_count}}</td><td class="px-4 py-3 text-right">{{active_cases}}</td><td class="px-4 py-3 text-right {{#if overdue_cases}}font-semibold text-red-600{{/if}}">{{overdue_cases}}</td><td class="px-4 py-3 text-right">{{escalated_cases}}</td></tr>{{/each}}</tbody>
+  </table></div>
+</section>
+
+<section class="mt-6 rounded-xl border border-slate-200 bg-white shadow-sm">
+  <div class="flex items-center justify-between border-b border-slate-100 px-4 py-3"><h2 class="font-semibold">Latest cases</h2><a href="/crm/cases" class="text-sm text-violet-700 hover:underline">View all</a></div>
+  {{> case_table cases=recent base="/crm/cases" showCustomer=true showAgent=true}}
+</section>
+<section class="mt-8" aria-label="Sales and campaigns">
+  <div class="mb-3 flex items-center justify-between"><h2 class="font-semibold text-slate-900">Sales and campaigns</h2><a href="/crm/sales" class="text-sm text-violet-700 hover:underline">Sales &amp; Orders</a></div>
+  <p class="mb-3 text-xs text-slate-500">Operational figures from the orders in this CRM, demo orders included (labelled). Official figures, with demo data excluded, are in <a href="/crm/analytics" class="text-violet-700 hover:underline">Analytics</a>.</p>
+  <div class="grid grid-cols-2 gap-4 lg:grid-cols-4">
+    {{> stat label="Completed sales today" value=sales.today_sales money=true href="/crm/sales?status=completed"}}
+    {{> stat label="Completed sales (all)" value=sales.sales_total money=true href="/crm/sales?status=completed"}}
+    {{> stat label="Orders in progress" value=sales.in_progress href="/crm/sales?status=confirmed"}}
+    {{> stat label="Payments to verify" value=sales.to_verify href="/crm/sales/payments?status=recorded" alert=sales.to_verify}}
+    {{> stat label="Refunds waiting" value=refunds.requested href="/crm/sales/refunds?status=requested" alert=refunds.requested}}
+    {{> stat label="Promotions to approve" value=promoPending href="/crm/promotions?status=pending_approval" alert=promoPending}}
+  </div>
+  <div class="mt-4">{{> charts blocks=salesBlocks}}</div>
+</section>
+<section class="mt-8" aria-label="Retention and forecast" data-retention="1">
+  <div class="mb-3 flex items-center justify-between"><h2 class="font-semibold text-slate-900">Retention and forecast</h2><a href="/crm/analytics" class="text-sm text-violet-700 hover:underline">Analytics</a></div>
+  <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+    <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"><p class="text-xs font-medium uppercase tracking-wide text-slate-500">Repeat customer rate (90 days)</p><p class="mt-1 text-3xl font-semibold tabular-nums">{{#if retention.buyers}}{{retention.repeatRate}}%{{else}}—{{/if}}</p><p class="mt-1 text-xs text-slate-500">{{retention.repeat}} of {{retention.buyers}} buyer(s) bought more than once{{#if retention.includesDemo}} · <span class="text-amber-800" data-includes-demo="1">includes demo data (no real sales yet)</span>{{/if}}</p></div>
+    <div class="rounded-xl border border-amber-200 bg-amber-50 p-4 shadow-sm"><p class="text-xs font-medium uppercase tracking-wide text-amber-800">Next 7 days net sales · Estimate</p>{{#if forecast}}<p class="mt-1 text-3xl font-semibold tabular-nums">{{peso forecast.total}}</p><p class="mt-1 text-xs text-slate-600">{{forecast.method}}{{#if forecast.includesDemo}} · <span class="text-amber-800" data-includes-demo="1">includes demo data</span>{{/if}}</p>{{else}}<p class="mt-1 text-sm text-slate-600">No forecast yet. <a href="/crm/analytics/forecasts" class="text-violet-700 hover:underline">Compute one</a>.</p>{{/if}}</div>
+  </div>
+</section>
+<div class="mt-6" aria-label="My requests">{{> my_requests_card}}</div>
+{{> layout_bottom}}

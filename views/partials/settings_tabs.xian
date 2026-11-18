@@ -1,0 +1,14 @@
+{{#if cfg.isManager}}
+<nav class="mb-6 flex flex-wrap gap-1 border-b border-slate-200 text-sm" aria-label="Settings sections">
+  {{#if cfg.isManager}}
+  <a href="{{cfg.rules}}" class="-mb-px border-b-2 px-3 py-2 {{#if (eq tab "rules")}}border-violet-600 font-medium text-violet-700{{else}}border-transparent text-slate-600 hover:text-slate-900{{/if}}">Rules &amp; SLA</a>
+  <a href="{{cfg.categories}}" class="-mb-px border-b-2 px-3 py-2 {{#if (eq tab "categories")}}border-violet-600 font-medium text-violet-700{{else}}border-transparent text-slate-600 hover:text-slate-900{{/if}}">Case Categories</a>
+  <a href="{{cfg.templates}}" class="-mb-px border-b-2 px-3 py-2 {{#if (eq tab "templates")}}border-violet-600 font-medium text-violet-700{{else}}border-transparent text-slate-600 hover:text-slate-900{{/if}}">Response Templates</a>
+  <a href="{{cfg.audit}}" class="-mb-px border-b-2 px-3 py-2 {{#if (eq tab "audit")}}border-violet-600 font-medium text-violet-700{{else}}border-transparent text-slate-600 hover:text-slate-900{{/if}}">Audit Log</a>
+  <a href="{{cfg.permissions}}" class="-mb-px border-b-2 px-3 py-2 {{#if (eq tab "permissions")}}border-violet-600 font-medium text-violet-700{{else}}border-transparent text-slate-600 hover:text-slate-900{{/if}}">Roles &amp; Permissions</a>
+  <a href="{{cfg.access}}" class="-mb-px border-b-2 px-3 py-2 {{#if (eq tab "access")}}border-violet-600 font-medium text-violet-700{{else}}border-transparent text-slate-600 hover:text-slate-900{{/if}}">Teams &amp; CRM Access</a>
+  <a href="/crm/settings/integration" class="-mb-px border-b-2 px-3 py-2 {{#if (eq tab "integration")}}border-violet-600 font-medium text-violet-700{{else}}border-transparent text-slate-600 hover:text-slate-900{{/if}}">Integration Health</a>
+  <a href="/crm/approvals" class="-mb-px border-b-2 px-3 py-2 {{#if (eq tab "approvals")}}border-violet-600 font-medium text-violet-700{{else}}border-transparent text-slate-600 hover:text-slate-900{{/if}}">Approvals Queue</a>
+  {{/if}}
+</nav>
+{{/if}}

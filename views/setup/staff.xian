@@ -1,0 +1,64 @@
+{{> layout_top}}
+<div class="mb-4 rounded-lg border border-dashed border-amber-400 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+  {{mockBadge}} <strong>HR adapter mode: {{hrMode}}.</strong>
+  {{#if canEdit}}Employee references below come from the <strong>mock HR fixture</strong> (not real HR data). While HR is in mock mode, the setup account can create local CRM logins for them and simulate HR status changes to test automatic access removal.
+  {{else}}Staff access comes from JOHNVIVZ HR records; local logins cannot be created here.{{/if}}
+</div>
+<section class="rounded-xl border border-slate-200 bg-white shadow-sm">
+  <div class="overflow-x-auto"><table class="stack min-w-full text-sm">
+    <thead class="bg-slate-50 text-left text-xs font-medium uppercase tracking-wide text-slate-500"><tr><th class="px-4 py-2">HR employee</th><th class="px-4 py-2">HR status</th><th class="px-4 py-2">CRM login</th><th class="px-4 py-2">Actions</th></tr></thead>
+    <tbody class="divide-y divide-slate-100 align-top">
+    {{#each rows}}
+      <tr>
+        <td class="px-4 py-3"><span class="font-medium">{{full_name}}</span> {{#if is_mock}}{{mockBadge}}{{/if}}<p class="font-mono text-xs text-slate-500">{{employee_id}}</p><p class="text-xs text-slate-500">{{position_title}}</p></td>
+        <td class="px-4 py-3">{{employmentLabel employment_status}}<p class="text-xs text-slate-400">synced {{timeAgo last_synced_at}}</p>
+          {{#if ../canEdit}}<form method="POST" action="/setup/staff/hr-status" class="mt-1 flex gap-1"><input type="hidden" name="_csrf" value="{{../csrfToken}}"><input type="hidden" name="employee_id" value="{{employee_id}}">
+            <select name="status" aria-label="Simulate HR status" class="rounded border border-slate-300 px-1 py-0.5 text-xs">{{#each ../statusOptions}}<option value="{{this}}" {{selected ../employment_status this}}>{{employmentLabel this}}</option>{{/each}}</select>
+            <button class="rounded border border-amber-300 px-2 py-0.5 text-xs text-amber-800 hover:bg-amber-50" title="Simulates the HR EmployeeStatusChanged event (mock mode only)">Simulate</button></form>{{/if}}</td>
+        <td class="px-4 py-3">{{#if user_id}}{{email}}<p class="text-xs text-slate-500">{{this.roleLabel}}{{#if team_name}} · {{team_name}}{{/if}}</p>
+            {{#if access_revoked_at}}<p class="text-xs text-red-600">Access removed: {{access_revoked_reason}}</p>{{/if}}{{#unless is_active}}<p class="text-xs text-red-600">Disabled in CRM</p>{{/unless}}
+            <p class="text-xs text-slate-400">last sign-in {{formatDateTime last_login_at}}</p>
+          {{else}}<span class="text-slate-400">No login</span>{{/if}}</td>
+        <td class="px-4 py-3">
+          {{#if user_id}}
+          <div class="flex flex-col gap-1">
+            <form method="POST" action="/setup/staff/{{user_id}}/password" class="flex gap-1"><input type="hidden" name="_csrf" value="{{../csrfToken}}"><input type="password" name="password" minlength="8" maxlength="72" required placeholder="New password" aria-label="New password" class="w-32 rounded border border-slate-300 px-2 py-1 text-xs"><button class="rounded border border-slate-300 px-2 py-1 text-xs hover:bg-slate-50">Reset</button></form>
+            <form method="POST" action="/setup/staff/{{user_id}}/toggle"><input type="hidden" name="_csrf" value="{{../csrfToken}}"><button class="rounded border border-slate-300 px-2 py-1 text-xs hover:bg-slate-50">{{#if is_active}}Disable CRM access{{else}}Enable CRM access{{/if}}</button></form>
+          </div>
+          {{else}}{{#if ../canEdit}}
+          <form method="POST" action="/setup/staff" class="flex flex-wrap gap-1"><input type="hidden" name="_csrf" value="{{../csrfToken}}"><input type="hidden" name="employee_id" value="{{employee_id}}">
+            <select name="role" required aria-label="CRM role" class="rounded border border-slate-300 px-1 py-1 text-xs">{{#each ../roleOptions}}<option value="{{value}}">{{label}}</option>{{/each}}</select>
+            <select name="team_id" aria-label="Team" class="rounded border border-slate-300 px-1 py-1 text-xs"><option value="">No team</option>{{#each ../teams}}<option value="{{id}}">{{name}}</option>{{/each}}</select>
+            <input type="password" name="password" minlength="8" maxlength="72" required placeholder="Temporary password" aria-label="Temporary password" class="w-36 rounded border border-slate-300 px-2 py-1 text-xs">
+            <button class="rounded bg-violet-700 px-2 py-1 text-xs text-white hover:bg-violet-800">Create login</button></form>
+          {{/if}}{{/if}}
+        </td>
+      </tr>
+    {{/each}}
+    </tbody></table></div>
+</section>
+{{#if canEdit}}
+<section class="mt-6 rounded-xl border border-amber-300 bg-amber-50/50 p-4 shadow-sm">
+  <h2 class="font-semibold text-slate-900">Simulate HR reference changes {{mockBadge}}</h2>
+  <p class="mt-1 text-xs text-slate-600">Sends DepartmentUpdated / PositionUpdated as HR would (mock mode only). The CRM copy changes and its sync time is refreshed. CRM screens never edit these references.</p>
+  <form method="POST" action="/setup/staff/hr-reference" class="mt-3 flex flex-wrap items-end gap-2"><input type="hidden" name="_csrf" value="{{csrfToken}}">
+    <div><label for="reference_id" class="block text-xs font-medium text-slate-500">Event and reference</label><select id="reference_id" name="reference_id" class="rounded border border-slate-300 px-2 py-1.5 text-sm">
+      {{#each departments}}<option value="department:{{id}}">DepartmentUpdated · {{label}} ({{id}})</option>{{/each}}{{#each positions}}<option value="position:{{id}}">PositionUpdated · {{label}} ({{id}})</option>{{/each}}</select></div>
+    <div><label for="label" class="block text-xs font-medium text-slate-500">New name / title</label><input id="label" name="label" required minlength="2" maxlength="120" class="rounded border border-slate-300 px-2 py-1.5 text-sm"></div>
+    <button class="rounded border border-amber-400 bg-white px-3 py-1.5 text-sm text-amber-900 hover:bg-amber-50">Simulate event</button>
+  </form>
+</section>
+{{/if}}
+<p class="mt-3 text-xs text-slate-500">The CRM Manager grants CRM access to HR employees, and manages teams, under Settings › Teams &amp; CRM Access. This setup page is for initial setup and emergencies.</p>
+{{#if essMock}}
+<section class="mt-6 rounded-xl border border-amber-300 bg-amber-50/50 p-4 shadow-sm" data-mock-ess="1">
+  <h2 class="font-semibold text-slate-900">Mock ESS registration {{mockBadge}}</h2>
+  <p class="mt-1 text-xs text-slate-600">Only while <span class="font-mono">INTEGRATION_ESS_LOGIN=mock</span>. Stands in for a new hire registering in ESS (JVzPay): the email must belong to an HR employee. The person then signs in to the CRM with this email and password; the first sign-in activates a "Waiting for ESS registration" account. The password is stored hashed and never shown.</p>
+  <form method="POST" action="/setup/staff/mock-ess" class="mt-3 flex flex-wrap items-end gap-2"><input type="hidden" name="_csrf" value="{{csrfToken}}">
+    <input type="email" name="email" required maxlength="254" placeholder="Work email (from HR)" aria-label="Work email" class="w-64 rounded border border-slate-300 px-2 py-1 text-sm">
+    <input type="password" name="password" required minlength="8" maxlength="72" placeholder="ESS password" aria-label="ESS password" class="w-40 rounded border border-slate-300 px-2 py-1 text-sm">
+    <button class="rounded border border-amber-400 bg-white px-3 py-1 text-sm hover:bg-amber-50">Register in mock ESS</button></form>
+  {{#if mockEss.length}}<ul class="mt-3 text-xs text-slate-600">{{#each mockEss}}<li><span class="font-mono">{{email}}</span> · {{employee_id}} · registered {{formatDateTime registered_at}}</li>{{/each}}</ul>{{/if}}
+</section>
+{{/if}}
+{{> layout_bottom}}

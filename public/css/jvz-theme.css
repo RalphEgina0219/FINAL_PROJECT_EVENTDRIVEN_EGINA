@@ -1,0 +1,73 @@
+/* JVz shared look (navy sidebar, blue primary, rounded cards). Same tokens as JVzPay so the four apps match.
+   Tailwind comes from the CDN; this file holds what utilities cannot: gradients, photo banners and page-wide polish. */
+:root {
+  --jvz-bg: #f2f6fc;
+  --jvz-border: #e3eaf6;
+  --jvz-ink: #0a1f5c;
+  --jvz-shadow: 0 1px 2px rgba(15, 40, 100, .04), 0 8px 24px -10px rgba(15, 40, 100, .12);
+}
+body { background: var(--jvz-bg); }
+
+/* Sidebar */
+.jvz-sidebar { background: linear-gradient(180deg, #0c2d80 0%, #0a2268 55%, #071a50 100%); }
+.jvz-sidebar nav { scrollbar-width: thin; scrollbar-color: rgba(255, 255, 255, .25) transparent; }
+.jvz-nav-active { background: linear-gradient(90deg, #1d63f0, #2f78ff); box-shadow: 0 8px 18px -8px rgba(29, 99, 240, .9); }
+.jvz-compliance { background: rgba(255, 255, 255, .08); border: 1px solid rgba(255, 255, 255, .12); }
+
+/* Welcome banner (dashboards) and customer-portal banner */
+.jvz-banner {
+  position: relative; overflow: hidden; isolation: isolate; border-radius: 1rem; color: #fff;
+  background: linear-gradient(90deg, #071f63 0%, #0b3aa8 50%, #1d6df0 100%);
+  box-shadow: 0 14px 30px -16px rgba(11, 58, 168, .65);
+}
+.jvz-banner::after {
+  content: ""; position: absolute; inset: 0 0 0 auto; width: min(62%, 620px); z-index: -1;
+  background: url("/images/banner-building.jpg") right center / cover no-repeat;
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 45%); mask-image: linear-gradient(to right, transparent 0%, #000 45%);
+}
+@media (max-width: 639px) { .jvz-banner::after { opacity: .35; width: 100%; } }
+
+/* Split-screen sign-in / register hero */
+.jvz-hero { position: relative; overflow: hidden; isolation: isolate; color: #dbe7ff; background: linear-gradient(160deg, #0b3aa8 0%, #0a2268 55%, #061747 100%); }
+.jvz-hero::before {
+  content: ""; position: absolute; right: 0; bottom: 0; width: 62%; height: 78%; z-index: -1;
+  background: url("/images/hero-building.jpg") center bottom / cover no-repeat; opacity: .9;
+  -webkit-mask-image: linear-gradient(to top, #000 55%, transparent 100%), linear-gradient(to left, #000 50%, transparent 100%);
+  -webkit-mask-composite: source-in; mask-image: linear-gradient(to top, #000 55%, transparent 100%), linear-gradient(to left, #000 50%, transparent 100%); mask-composite: intersect;
+}
+.jvz-hero::after {
+  content: ""; position: absolute; left: -20%; bottom: -30%; width: 90%; height: 60%; z-index: -1; border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(47, 120, 255, .55), transparent);
+}
+
+/* Page-wide polish. Specificity (0,2,x) beats the single-class Tailwind utilities used all over the views. */
+.jvz-main .rounded-xl, .jvz-main .rounded-2xl { border-radius: 1rem; }
+.jvz-main .rounded-xl.border-slate-200, .jvz-main .rounded-2xl.border-slate-200 { border-color: var(--jvz-border); box-shadow: var(--jvz-shadow); }
+.jvz-main thead.bg-slate-50 { background: #f4f8fe; }
+.jvz-main thead th { color: #5a6b8e; }
+.jvz-main tbody tr:hover { background-color: #f8fbff; }
+.jvz-main input:not([type=checkbox]):not([type=radio]):not([type=hidden]):not([type=file]):not([type=submit]),
+.jvz-main select, .jvz-main textarea { border-color: #d3dcee; border-radius: .75rem; background-color: #fff; }
+.jvz-main input:not([type=checkbox]):not([type=radio]):focus, .jvz-main select:focus, .jvz-main textarea:focus,
+.jvz-field input:focus { border-color: #2a73f5; outline: none; box-shadow: 0 0 0 3px rgba(42, 115, 245, .18); }
+.jvz-main button.bg-violet-700, .jvz-main a.bg-violet-700 { border-radius: .75rem; box-shadow: 0 8px 16px -8px rgba(15, 79, 207, .7); }
+.jvz-main h2 { color: var(--jvz-ink); }
+.jvz-main button.bg-slate-900, .jvz-main a.bg-slate-900 { background-color: #0a2266; border-radius: .75rem; }
+.jvz-main button.bg-slate-900:hover, .jvz-main a.bg-slate-900:hover { background-color: #0c2a78; }
+
+/* Header menu */
+.jvz-menu > summary { list-style: none; cursor: pointer; }
+.jvz-menu > summary::-webkit-details-marker { display: none; }
+.jvz-menu[open] > summary .jvz-chevron { transform: rotate(180deg); }
+.jvz-avatar { background: linear-gradient(135deg, #1d63f0, #0a2268); }
+
+/* Auth form fields: icon on the left, show/hide button on the right */
+.jvz-field { position: relative; }
+.jvz-field > .jvz-field-icon { position: absolute; left: .85rem; top: 50%; transform: translateY(-50%); color: #7487ad; pointer-events: none; }
+.jvz-field > input, .jvz-field > select { width: 100%; padding: .7rem .9rem .7rem 2.6rem; border: 1px solid #d3dcee; border-radius: .75rem; background: #f7f9fd; font-size: .9rem; }
+.jvz-field > input:focus, .jvz-field > select:focus { background: #fff; }
+.jvz-field > .jvz-toggle { position: absolute; right: .6rem; top: 50%; transform: translateY(-50%); padding: .3rem; color: #7487ad; border-radius: .5rem; }
+.jvz-field > .jvz-toggle:hover { color: #1560e8; background: #eef4ff; }
+.jvz-btn { display: inline-flex; width: 100%; align-items: center; justify-content: center; gap: .5rem; padding: .75rem 1rem; border-radius: .75rem; font-weight: 600; color: #fff;
+  background: linear-gradient(90deg, #0f4fcf, #1d63f0); box-shadow: 0 10px 20px -10px rgba(15, 79, 207, .8); }
+.jvz-btn:hover { filter: brightness(1.07); }

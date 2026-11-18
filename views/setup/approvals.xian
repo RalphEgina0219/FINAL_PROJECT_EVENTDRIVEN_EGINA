@@ -1,0 +1,44 @@
+{{> layout_top}}
+<div class="mb-4 rounded-lg border border-dashed border-amber-400 bg-amber-50 px-4 py-3 text-sm text-amber-900" role="note" data-mock-ess="1">
+  {{mockBadge}} <strong>Mock ESS.</strong> While HR is in mock mode there is no real HR/ESS to send leave, attendance and overtime requests, so this page sends one in its place. It goes through the same inbox and the same routing code as a signed live request, is flagged <em>mock</em>, and its decision is recorded but never sent anywhere. HR adapter mode: <strong>{{hrMode}}</strong>. Approvals: <strong>{{#if enabled}}enabled{{else}}not enabled (APPROVALS_ENABLED=false){{/if}}</strong>.
+</div>
+{{#if ready}}
+<section class="mb-6 rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+  <h2 class="font-semibold text-slate-900">Send a request as an employee</h2>
+  <form method="POST" action="/setup/approvals" class="mt-3 grid gap-3 sm:grid-cols-2">
+    <input type="hidden" name="_csrf" value="{{csrfToken}}">
+    <div><label class="text-xs font-medium text-slate-500" for="employee_id">Employee</label><select id="employee_id" name="employee_id" required class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm">{{#each employees}}<option value="{{employee_id}}">{{full_name}} ({{employee_id}})</option>{{/each}}<option value="__unknown">Someone who is not a CRM employee (MOCK-EMP-9001)</option></select></div>
+    <div><label class="text-xs font-medium text-slate-500" for="request_type">Request type</label><select id="request_type" name="request_type" required class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm">{{#each typeOptions}}<option value="{{value}}">{{label}}</option>{{/each}}</select></div>
+    <fieldset class="sm:col-span-2 grid gap-3 rounded-lg border border-slate-200 p-3 sm:grid-cols-4"><legend class="px-1 text-xs font-medium text-slate-500">Leave</legend>
+      <div><label class="text-xs text-slate-500" for="leave_type">Leave type</label><input id="leave_type" name="leave_type" value="Vacation leave" class="mt-1 w-full rounded border border-slate-300 px-2 py-1 text-sm"></div>
+      <div><label class="text-xs text-slate-500" for="start_date">From</label><input id="start_date" type="date" name="start_date" class="mt-1 w-full rounded border border-slate-300 px-2 py-1 text-sm"></div>
+      <div><label class="text-xs text-slate-500" for="end_date">To</label><input id="end_date" type="date" name="end_date" class="mt-1 w-full rounded border border-slate-300 px-2 py-1 text-sm"></div>
+      <div><label class="text-xs text-slate-500" for="days">Days</label><input id="days" name="days" value="1" class="mt-1 w-full rounded border border-slate-300 px-2 py-1 text-sm"></div>
+    </fieldset>
+    <fieldset class="sm:col-span-2 grid gap-3 rounded-lg border border-slate-200 p-3 sm:grid-cols-5"><legend class="px-1 text-xs font-medium text-slate-500">Attendance correction and overtime</legend>
+      <div><label class="text-xs text-slate-500" for="date">Date</label><input id="date" type="date" name="date" class="mt-1 w-full rounded border border-slate-300 px-2 py-1 text-sm"></div>
+      <div><label class="text-xs text-slate-500" for="time_in">Time in</label><input id="time_in" name="time_in" placeholder="08:00" class="mt-1 w-full rounded border border-slate-300 px-2 py-1 text-sm"></div>
+      <div><label class="text-xs text-slate-500" for="time_out">Time out</label><input id="time_out" name="time_out" placeholder="17:00" class="mt-1 w-full rounded border border-slate-300 px-2 py-1 text-sm"></div>
+      <div><label class="text-xs text-slate-500" for="start_time">Overtime start</label><input id="start_time" name="start_time" placeholder="18:00" class="mt-1 w-full rounded border border-slate-300 px-2 py-1 text-sm"></div>
+      <div><label class="text-xs text-slate-500" for="end_time">Overtime end</label><input id="end_time" name="end_time" placeholder="20:00" class="mt-1 w-full rounded border border-slate-300 px-2 py-1 text-sm"></div>
+      <div><label class="text-xs text-slate-500" for="hours">Overtime hours</label><input id="hours" name="hours" placeholder="2" class="mt-1 w-full rounded border border-slate-300 px-2 py-1 text-sm"></div>
+    </fieldset>
+    <div class="sm:col-span-2"><label class="text-xs font-medium text-slate-500" for="replaces_request_id">Replaces request (optional: the id of an earlier request this one changes; that one becomes Superseded)</label><input id="replaces_request_id" name="replaces_request_id" maxlength="64" placeholder="MOCK-REQ-..." class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 font-mono text-sm"></div>
+    <div class="sm:col-span-2"><label class="text-xs font-medium text-slate-500" for="reason">Reason</label><input id="reason" name="reason" maxlength="255" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"></div>
+    <div class="sm:col-span-2"><button class="rounded-lg bg-violet-700 px-4 py-2 text-sm font-medium text-white hover:bg-violet-800">Send the mock request</button></div>
+  </form>
+</section>
+{{else}}
+<p class="mb-6 rounded-xl border border-slate-200 bg-white px-6 py-8 text-center text-sm text-slate-600">The mock ESS is available only while HR is in <strong>mock</strong> mode and <span class="font-mono">APPROVALS_ENABLED=true</span>.</p>
+{{/if}}
+<section class="rounded-xl border border-slate-200 bg-white shadow-sm">
+  <h2 class="border-b border-slate-100 px-4 py-3 font-semibold text-slate-900">Latest requests (read only)</h2>
+  {{#if recent.length}}
+  <div class="overflow-x-auto"><table class="stack min-w-full text-sm">
+    <thead class="bg-slate-50 text-left text-xs font-medium uppercase tracking-wide text-slate-500"><tr><th class="px-4 py-2">Request</th><th class="px-4 py-2">Type</th><th class="px-4 py-2">Summary</th><th class="px-4 py-2">Routed to</th><th class="px-4 py-2">Status</th></tr></thead>
+    <tbody class="divide-y divide-slate-100 align-top">
+    {{#each recent}}<tr><td class="px-4 py-2 font-mono text-xs">{{request_id}}{{#if is_mock}} {{mockBadge}}{{/if}}</td><td class="px-4 py-2">{{type_label}}</td><td class="px-4 py-2">{{summary}}</td><td class="px-4 py-2 text-xs">{{#if approver_label}}{{approver_label}}{{else}}nobody{{/if}}</td><td class="px-4 py-2">{{approvalBadge status}}</td></tr>{{/each}}
+    </tbody></table></div>
+  {{else}}<p class="px-6 py-8 text-center text-sm text-slate-500">No requests yet.</p>{{/if}}
+</section>
+{{> layout_bottom}}

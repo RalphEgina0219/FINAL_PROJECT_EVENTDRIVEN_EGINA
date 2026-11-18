@@ -1,0 +1,21 @@
+{{> auth_top heroTitle="Welcome aboard." heroText="Confirm your email address and your JOHNVIVZ customer account is ready."}}
+    {{#if (eq state "confirm")}}
+    <span class="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-brand-100 text-brand-700">{{icon "envelope" "h-7 w-7"}}</span>
+    <h1 class="mt-4 text-center text-2xl font-extrabold tracking-tight text-navy-900">Confirm your email address</h1>
+    <p class="mt-2 text-center text-sm text-slate-600">Press the button to confirm <strong>{{email}}</strong> and activate your JOHNVIVZ customer account.</p>
+    <form method="POST" action="/verify-email/{{token}}" class="mt-6"><input type="hidden" name="_csrf" value="{{csrfToken}}">
+      <button type="submit" class="jvz-btn">Confirm email</button></form>
+    {{/if}}
+    {{#if (eq state "done")}}
+    <span class="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-emerald-100 text-emerald-600">{{icon "checkCircle" "h-7 w-7"}}</span>
+    <h1 class="mt-4 text-center text-2xl font-extrabold tracking-tight text-emerald-700">Email confirmed</h1>
+    <p class="mt-2 text-center text-sm text-slate-600">Your account is active. You can sign in now.</p>
+    <p class="mt-6"><a href="/login" class="jvz-btn">Go to sign in {{icon "arrowRight" "h-5 w-5"}}</a></p>
+    {{/if}}
+    {{#if (eq state "invalid")}}
+    <span class="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-amber-100 text-amber-600">{{icon "warning" "h-7 w-7"}}</span>
+    <h1 class="mt-4 text-center text-2xl font-extrabold tracking-tight text-navy-900">This link is no longer valid</h1>
+    <p class="mt-2 text-center text-sm text-slate-600">It may have expired or already been used. Sign in to request a new confirmation email.</p>
+    <p class="mt-6 text-center"><a href="/login" class="text-sm font-medium text-violet-700 hover:underline">Go to sign in</a></p>
+    {{/if}}
+{{> auth_bottom}}

@@ -1,0 +1,40 @@
+{{> layout_top}}
+{{> settings_tabs}}
+<p class="mb-3 text-sm"><a href="{{base}}" class="text-violet-700 hover:underline">← Integration Health</a></p>
+<p class="mb-4 max-w-3xl text-sm text-slate-600">Every completed sale and what happened to its <span class="font-mono">SaleCompleted</span> event for Inventory and Accounting. "Confirmed" means the application <em>accepted</em> the event; it is not proof of posting in Accounting's ledger. A sale with no confirmation after {{staleHours}} hours is <strong>unmatched</strong>. Sales sent only to mock or disabled applications are shown as "Mock / disabled, not sent" because nothing was ever sent.</p>
+
+<form method="GET" action="{{base}}/reconciliation" class="mb-4 flex flex-wrap items-end gap-2 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+  <div><label class="text-xs font-medium text-slate-500" for="from">From</label><input id="from" type="date" name="from" value="{{from}}" class="mt-1 rounded-lg border border-slate-300 px-3 py-2 text-sm"></div>
+  <div><label class="text-xs font-medium text-slate-500" for="to">To</label><input id="to" type="date" name="to" value="{{to}}" class="mt-1 rounded-lg border border-slate-300 px-3 py-2 text-sm"></div>
+  <label class="flex items-center gap-2 pb-2 text-sm text-slate-600"><input type="checkbox" name="problems" value="1" {{#if onlyProblems}}checked{{/if}} class="rounded border-slate-300"> Only unmatched and in progress</label>
+  <button class="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700">Show</button>
+  <a href="{{base}}/reconciliation?from={{from}}&amp;to={{to}}{{#if onlyProblems}}&amp;problems=1{{/if}}&amp;format=csv" class="rounded-lg border border-slate-300 px-4 py-2 text-sm hover:bg-slate-50">Download CSV</a>
+</form>
+
+<div class="mb-4 grid grid-cols-2 gap-3 sm:grid-cols-5">
+  {{> stat label="Completed sales" value=summary.completed_sales hint=(concat summary.from " to " summary.to)}}
+  {{> stat label="Confirmed" value=summary.confirmed}}
+  {{> stat label="In progress" value=summary.in_progress hint="under 24 h"}}
+  {{> stat label="Unmatched" value=summary.unmatched alert=summary.unmatched hint=(concat "₱" summary.unmatched_amount)}}
+  {{> stat label="Not sent (mock / disabled)" value=summary.not_sent}}
+</div>
+
+<section class="rounded-xl border border-slate-200 bg-white shadow-sm">
+  {{#if rows.length}}
+  <div class="overflow-x-auto"><table class="stack min-w-full text-sm">
+    <thead class="bg-slate-50 text-left text-xs font-medium uppercase tracking-wide text-slate-500"><tr><th class="px-4 py-2">Sale</th><th class="px-4 py-2">Order</th><th class="px-4 py-2">Completed</th><th class="px-4 py-2 text-right">Net</th><th class="px-4 py-2">Inventory</th><th class="px-4 py-2">Accounting</th><th class="px-4 py-2">Result</th></tr></thead>
+    <tbody class="divide-y divide-slate-100 align-top">
+    {{#each rows}}
+      <tr data-sale="{{transaction_no}}" data-status="{{status}}">
+        <td class="px-4 py-2 font-mono">{{transaction_no}} {{#if is_demo}}{{demoBadge}}{{/if}}</td><td class="px-4 py-2 font-mono text-xs">{{order_no}}</td>
+        <td class="px-4 py-2 text-xs text-slate-500">{{formatDateTime completed_at}}<p>{{age_hours}} h ago</p></td><td class="px-4 py-2 text-right tabular-nums">{{peso net_amount}}</td>
+        <td class="px-4 py-2">{{integrationBadge (lookup (lookup deliveries "johnvivz_inventory") "state")}}</td>
+        <td class="px-4 py-2">{{integrationBadge (lookup (lookup deliveries "johnvivz_accounting") "state")}}{{#if (lookup (lookup deliveries "johnvivz_accounting") "last_error")}}<p class="max-w-[14rem] break-words text-xs text-red-700">{{lookup (lookup deliveries "johnvivz_accounting") "last_error"}}</p>{{/if}}</td>
+        <td class="px-4 py-2">{{integrationBadge status}}</td>
+      </tr>
+    {{/each}}
+    </tbody></table></div>
+  {{#if truncated}}<p class="px-4 py-3 text-xs text-slate-500">Showing the first 500 sales. Narrow the dates to see the rest.</p>{{/if}}
+  {{else}}<p class="px-6 py-10 text-center text-sm text-slate-500">No completed sales {{#if onlyProblems}}that need attention {{/if}}between {{from}} and {{to}}.</p>{{/if}}
+</section>
+{{> layout_bottom}}

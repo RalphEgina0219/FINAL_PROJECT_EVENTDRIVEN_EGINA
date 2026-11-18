@@ -1,0 +1,83 @@
+{{> layout_top}}
+{{> area_tabs}}
+{{> inventory_note}}
+<a href="/crm/sales" class="mb-4 inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-700">{{icon "arrow-left" "h-4 w-4"}} Back to orders</a>
+<div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+  <div class="space-y-6 lg:col-span-2">
+    <section class="rounded-xl border border-slate-200 bg-white p-5 text-sm shadow-sm">
+      <div class="flex flex-wrap items-center gap-2"><span class="font-mono text-base font-semibold">{{o.order_no}}</span><span class="rounded-full bg-indigo-50 px-2 py-0.5 text-xs font-medium text-indigo-700 ring-1 ring-inset ring-indigo-600/20">{{o.status_label}}</span><span class="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-700">{{o.payment_label}}</span>{{#if o.is_demo}}{{demoBadge}}{{/if}}</div>
+      <p class="mt-2 text-slate-600">{{o.channel_label}} · {{o.fulfillment_label}} · placed {{formatDateTime o.created_at}}{{#if o.agent_name}} · agent {{o.agent_name}}{{/if}}</p>
+      {{#if o.address}}<p class="mt-1 text-slate-600">Deliver to: {{o.address.line1}}{{#if o.address.barangay}}, {{o.address.barangay}}{{/if}}{{#if o.address.city_municipality}}, {{o.address.city_municipality}}{{/if}}</p>{{/if}}
+      <p class="mt-1 text-xs text-slate-500">Stock: {{o.reservation_status}}{{#if o.inventory_reservation_ref}} · reservation <span class="font-mono">{{o.inventory_reservation_ref}}</span>{{/if}} · correlation <span class="font-mono">{{o.correlation_id}}</span></p>
+      {{#if o.cancel_reason}}<p class="mt-2 rounded-lg bg-slate-50 px-3 py-2 text-slate-700">Cancelled: {{o.cancel_reason}}</p>{{/if}}
+    </section>
+    <section class="rounded-xl border border-slate-200 bg-white shadow-sm">
+      <div class="border-b border-slate-100 px-4 py-3"><h2 class="font-semibold">Items</h2></div>
+      <div class="overflow-x-auto"><table class="stack min-w-full text-sm">
+        <thead class="bg-slate-50 text-left text-xs uppercase text-slate-500"><tr><th class="px-4 py-2">Product</th><th class="px-4 py-2 text-right">Qty</th><th class="px-4 py-2 text-right">Unit price</th><th class="px-4 py-2 text-right">Discount</th><th class="px-4 py-2 text-right">Total</th></tr></thead>
+        <tbody class="divide-y divide-slate-100">{{#each o.items}}<tr><td class="px-4 py-2">{{product_name}}<p class="font-mono text-xs text-slate-500">{{sku}}</p></td><td class="px-4 py-2 text-right tabular-nums">{{quantity}} {{unit}}</td><td class="px-4 py-2 text-right tabular-nums">{{peso unit_price}}</td><td class="px-4 py-2 text-right tabular-nums">{{#if discount_amount}}−{{peso discount_amount}}{{else}}—{{/if}}</td><td class="px-4 py-2 text-right tabular-nums">{{peso line_total}}</td></tr>{{/each}}</tbody>
+        <tfoot class="border-t border-slate-200 text-sm"><tr><td colspan="4" class="px-4 py-1 text-right text-slate-500">Subtotal</td><td class="px-4 py-1 text-right tabular-nums">{{peso o.subtotal}}</td></tr>
+          {{#if o.promotion}}<tr><td colspan="4" class="px-4 py-1 text-right text-slate-500">Promo {{o.promotion.promo_code}}</td><td class="px-4 py-1 text-right tabular-nums">−{{peso o.promotion.discount_amount}}</td></tr>{{/if}}{{#if o.loyalty}}<tr data-loyalty-line="1"><td colspan="4" class="px-4 py-1 text-right text-slate-500">Loyalty points ({{o.loyalty.points}} pts{{#if (eq o.loyalty.status "returned")}}, returned to the customer{{/if}})</td><td class="px-4 py-1 text-right tabular-nums">−{{peso o.loyalty.amount}}</td></tr>{{/if}}
+          <tr><td colspan="4" class="px-4 py-2 text-right font-semibold">Total</td><td class="px-4 py-2 text-right font-semibold tabular-nums">{{peso o.grand_total}}</td></tr>
+          <tr><td colspan="5" class="px-4 pb-2 text-right text-xs text-slate-500">VAT is computed by Accounting when the sale is posted.</td></tr></tfoot>
+      </table></div>
+    </section>
+    <section class="rounded-xl border border-slate-200 bg-white shadow-sm" id="payments">
+      <div class="border-b border-slate-100 px-4 py-3"><h2 class="font-semibold">Payments</h2><p class="text-xs text-slate-500">Verified {{peso o.verified_total}} of {{peso o.grand_total}}{{#if o.outstanding}} · still due {{peso o.outstanding}}{{/if}}</p></div>
+      {{#if payments.length}}
+      <ul class="divide-y divide-slate-100 text-sm">
+        {{#each payments}}
+        <li class="px-4 py-3"><div class="flex flex-wrap items-center justify-between gap-2">
+          <span><span class="font-medium">{{method_label}}</span> <span class="tabular-nums">{{peso amount}}</span>{{#if reference_no}} · ref <span class="font-mono">{{reference_no}}</span>{{else}}{{#if pendingCod}} · <span class="text-amber-700">to be collected on delivery</span>{{/if}}{{/if}}</span>
+          <span class="rounded-full px-2 py-0.5 text-xs font-medium ring-1 ring-inset {{#if (eq status "verified")}}bg-emerald-50 text-emerald-700 ring-emerald-600/20{{else}}{{#if (eq status "voided")}}bg-slate-100 text-slate-600 ring-slate-500/20{{else}}bg-amber-50 text-amber-800 ring-amber-600/20{{/if}}{{/if}}">{{status_label}}</span></div>
+          <p class="text-xs text-slate-500">{{formatDateTime paid_at}} · recorded by {{#if recorded_by_name}}{{recorded_by_name}}{{else}}—{{/if}}{{#if verified_by_name}} · verified by {{verified_by_name}}{{/if}}{{#if void_reason}} · {{void_reason}}{{/if}}</p>
+          <div class="mt-1 flex flex-wrap items-center gap-3 text-xs">
+            {{#if canVerify}}<form method="POST" action="/crm/sales/orders/{{@root.o.id}}/payments/{{id}}/verify" onsubmit="return confirm('Have you checked this reference number?');"><input type="hidden" name="_csrf" value="{{@root.csrfToken}}"><button class="rounded border border-emerald-300 px-2 py-1 font-medium text-emerald-700 hover:bg-emerald-50">Verify reference</button></form>{{/if}}
+            {{#if mine}}{{#if canVoid}}<span class="text-slate-500">You recorded this, so someone else verifies it.</span>{{/if}}{{/if}}
+            {{#if canVoid}}<form method="POST" action="/crm/sales/orders/{{@root.o.id}}/payments/{{id}}/void" class="flex items-center gap-1"><input type="hidden" name="_csrf" value="{{@root.csrfToken}}"><input name="reason" required minlength="5" maxlength="200" placeholder="Reason to void" aria-label="Reason to void" class="rounded border border-slate-300 px-2 py-1 text-xs"><button class="text-red-600 hover:underline">Void</button></form>{{/if}}
+          </div></li>
+        {{/each}}
+      </ul>
+      {{else}}<p class="px-4 py-4 text-sm text-slate-500">No payment recorded yet.</p>{{/if}}
+      {{#if canPay}}
+      <form method="POST" action="/crm/sales/orders/{{o.id}}/payments" class="grid grid-cols-1 gap-2 border-t border-slate-100 bg-slate-50 p-4 sm:grid-cols-5">
+        <input type="hidden" name="_csrf" value="{{csrfToken}}">
+        <select name="method" required aria-label="Method" class="rounded-lg border border-slate-300 px-3 py-2 text-sm">{{#each methodOptions}}<option value="{{value}}">{{label}}</option>{{/each}}</select>
+        <input name="reference" maxlength="40" placeholder="Reference no. / receipt no." aria-label="Reference number" class="rounded-lg border border-slate-300 px-3 py-2 font-mono text-sm sm:col-span-2">
+        <input name="amount" required inputmode="decimal" value="{{o.outstanding}}" aria-label="Amount received" class="rounded-lg border border-slate-300 px-3 py-2 text-right text-sm">
+        <button class="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700">Record payment</button>
+        <p class="text-xs text-slate-500 sm:col-span-5">GCash, Maya and Cash on Delivery need the reference / receipt number typed exactly; another staff member verifies it. Cash counted at the counter is verified at once.</p>
+      </form>
+      {{/if}}
+    </section>
+    {{#if refunds.length}}
+    <section class="rounded-xl border border-slate-200 bg-white shadow-sm"><div class="border-b border-slate-100 px-4 py-3"><h2 class="font-semibold">Refunds</h2></div>
+      <ul class="divide-y divide-slate-100 text-sm">{{#each refunds}}<li class="flex flex-wrap items-center justify-between gap-2 px-4 py-2"><a href="/crm/sales/refunds/{{id}}" class="font-mono text-violet-700 hover:underline">{{refund_no}}</a><span>{{peso amount}} · {{status_label}}</span></li>{{/each}}</ul></section>
+    {{/if}}
+  </div>
+
+  <aside class="space-y-6">
+    <section class="rounded-xl border border-slate-200 bg-white p-5 text-sm shadow-sm">
+      <h3 class="mb-3 font-semibold">Customer</h3>
+      <p><a href="/crm/customers/{{o.customer_id}}" class="font-medium text-violet-700 hover:underline">{{o.customer_name}}</a> <span class="text-xs text-slate-500">{{o.customer_no}}</span></p>
+      {{#if o.transaction_no}}<p class="mt-2 text-xs text-slate-500">Sale <span class="font-mono">{{o.transaction_no}}</span></p>{{/if}}
+      <ol class="mt-3 space-y-1 border-t border-slate-100 pt-3 text-xs">{{#each tracking}}<li class="{{#if done}}text-emerald-700{{else}}text-slate-400{{/if}}">{{#if done}}✓{{else}}○{{/if}} {{label}}</li>{{/each}}</ol>
+    </section>
+    {{#if canReady}}<section class="rounded-xl border border-slate-200 bg-white p-5 text-sm shadow-sm"><form method="POST" action="/crm/sales/orders/{{o.id}}/ready"><input type="hidden" name="_csrf" value="{{csrfToken}}"><button class="w-full rounded-lg border border-indigo-300 px-4 py-2 text-sm font-medium text-indigo-700 hover:bg-indigo-50">Mark as ready</button></form><p class="mt-2 text-xs text-slate-500">Ready for pickup or delivery.</p></section>{{/if}}
+    {{#if canComplete}}<section class="rounded-xl border border-emerald-200 bg-emerald-50 p-5 text-sm shadow-sm"><h3 class="font-semibold text-emerald-900">Complete the sale</h3><p class="mb-2 text-xs text-emerald-800">The payment is verified in full. Completing creates one sale and sends SaleCompleted once.</p><form method="POST" action="/crm/sales/orders/{{o.id}}/complete" onsubmit="return confirm('Complete this sale?');"><input type="hidden" name="_csrf" value="{{csrfToken}}"><button class="w-full rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700">Complete sale</button></form></section>
+    {{else}}{{#if canCancel}}<section class="rounded-xl border border-slate-200 bg-white p-5 text-xs text-slate-500 shadow-sm">To complete the sale, record and verify the payment in full.</section>{{/if}}{{/if}}
+    {{#if canCancel}}<section class="rounded-xl border border-slate-200 bg-white p-5 text-sm shadow-sm"><h3 class="mb-2 font-semibold">Cancel the order</h3>
+      <form method="POST" action="/crm/sales/orders/{{o.id}}/cancel" class="space-y-2" onsubmit="return confirm('Cancel this order and release its stock?');"><input type="hidden" name="_csrf" value="{{csrfToken}}"><input name="reason" required minlength="5" maxlength="200" placeholder="Reason" aria-label="Reason" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"><button class="w-full rounded-lg border border-red-300 px-4 py-2 text-sm text-red-700 hover:bg-red-50">Cancel order</button></form>
+      <p class="mt-2 text-xs text-slate-500">Not possible once a payment is verified: complete the sale and refund it.</p></section>{{/if}}
+    {{#if canRefund}}<section class="rounded-xl border border-slate-200 bg-white p-5 text-sm shadow-sm"><h3 class="mb-2 font-semibold">Request a refund</h3>
+      <form method="POST" action="/crm/sales/orders/{{o.id}}/refund" class="space-y-2"><input type="hidden" name="_csrf" value="{{csrfToken}}">
+        <input name="amount" required inputmode="decimal" placeholder="Amount (up to {{peso refundable}})" aria-label="Refund amount" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm">
+        <input name="reason" required minlength="5" maxlength="255" placeholder="Reason" aria-label="Reason" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm">
+        <input name="case_no" maxlength="30" placeholder="Related case (optional)" aria-label="Related case" class="w-full rounded-lg border border-slate-300 px-3 py-2 font-mono text-sm">
+        <details class="text-xs"><summary class="cursor-pointer text-violet-700">Items coming back (optional)</summary>
+          <div class="mt-2 space-y-1">{{#each o.items}}<div class="flex items-center gap-1"><span class="min-w-0 flex-1 truncate">{{product_name}}</span><input name="ret_qty_{{product_id}}" inputmode="decimal" placeholder="qty" aria-label="Quantity returned of {{product_name}}" class="w-14 rounded border border-slate-300 px-1 py-1 text-right"><select name="ret_cond_{{product_id}}" aria-label="Condition of {{product_name}}" class="rounded border border-slate-300 px-1 py-1">{{#each @root.conditionOptions}}<option value="{{value}}">{{label}}</option>{{/each}}</select></div>{{/each}}</div></details>
+        <button class="w-full rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700">Request refund</button></form>
+      <p class="mt-2 text-xs text-slate-500">Someone else must approve it. Refundable now: {{peso refundable}}.</p></section>{{/if}}
+  </aside>
+</div>
+{{> layout_bottom}}

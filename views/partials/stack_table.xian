@@ -1,0 +1,20 @@
+<style>
+/* Phone width: a table.stack turns into one card per row, each cell labelled with its column title (nothing is hidden behind a sideways scroll). */
+@media (max-width: 639px) {
+  table.stack, table.stack tbody, table.stack tr, table.stack td { display: block; width: 100%; }
+  table.stack thead { display: none; }
+  table.stack tr { padding: .6rem 1rem; border-bottom: 1px solid #e2e8f0; }
+  table.stack td { padding: .2rem 0 !important; text-align: left !important; max-width: none !important; white-space: normal !important; overflow-wrap: anywhere; }
+  table.stack td[data-label]::before { content: attr(data-label); display: block; font-size: .65rem; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: #64748b; }
+  table.stack td form { display: inline-block; }
+  table.stack td:empty { display: none; }
+}
+</style>
+<script>
+document.querySelectorAll('table.stack').forEach(function (t) {
+  var heads = Array.prototype.map.call(t.querySelectorAll('thead th'), function (h) { return h.textContent.trim(); });
+  t.querySelectorAll('tbody tr').forEach(function (r) {
+    Array.prototype.forEach.call(r.children, function (c, i) { if (heads[i] && c.textContent.trim()) c.setAttribute('data-label', heads[i]); });
+  });
+});
+</script>

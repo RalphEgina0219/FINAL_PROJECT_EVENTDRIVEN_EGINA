@@ -1,0 +1,54 @@
+{{> layout_top}}
+{{> area_tabs}}
+<a href="/crm/follow-ups" class="mb-4 inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-700">{{icon "arrow-left" "h-4 w-4"}} Back to follow-ups</a>
+<div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+  <section class="rounded-xl border border-slate-200 bg-white p-5 text-sm shadow-sm lg:col-span-2">
+    <p class="text-xs uppercase tracking-wide text-slate-500">Follow-up task{{#if t.is_demo}} {{demoBadge}}{{/if}}</p>
+    <h2 class="mt-1 text-lg font-semibold text-slate-900">{{t.title}}</h2>
+    {{#if notesLines.length}}<div class="mt-3 space-y-1 text-slate-700">{{#each notesLines}}<p class="whitespace-pre-line">{{this}}</p>{{/each}}</div>{{else}}<p class="mt-3 text-slate-400">No notes.</p>{{/if}}
+  </section>
+  <aside class="space-y-6">
+    <section class="rounded-xl border border-slate-200 bg-white p-5 text-sm shadow-sm">
+      <h3 class="mb-3 font-semibold">Details</h3>
+      <dl class="space-y-2">
+        <div class="flex justify-between gap-2"><dt class="text-slate-500">Status</dt><dd class="{{#if (eq t.state "overdue")}}font-semibold text-red-600{{/if}}">{{t.state_label}}</dd></div>
+        <div class="flex justify-between gap-2"><dt class="text-slate-500">Due</dt><dd class="{{#if t.is_overdue}}font-semibold text-red-600{{/if}}">{{formatDateTime t.due_at}}</dd></div>
+        <div class="flex justify-between gap-2"><dt class="text-slate-500">Priority</dt><dd>{{t.priority}}</dd></div>
+        <div class="flex justify-between gap-2"><dt class="text-slate-500">Customer</dt><dd class="text-right"><a href="/crm/customers/{{t.customer_id}}" class="font-medium text-violet-700 hover:underline">{{t.customer_name}}</a><br><span class="text-xs text-slate-500">{{t.customer_no}}</span></dd></div>
+        {{#if t.case_no}}<div class="flex justify-between gap-2"><dt class="text-slate-500">Related case</dt><dd><a href="/crm/cases/{{t.case_id}}" class="font-mono text-violet-700 hover:underline">{{t.case_no}}</a></dd></div>{{/if}}
+        <div class="flex justify-between gap-2"><dt class="text-slate-500">Assigned to</dt><dd>{{t.assignee_name}}</dd></div>
+        {{#if t.created_by_name}}<div class="flex justify-between gap-2"><dt class="text-slate-500">Created by</dt><dd>{{t.created_by_name}}</dd></div>{{/if}}
+        {{#if t.completed_at}}<div class="flex justify-between gap-2"><dt class="text-slate-500">Completed</dt><dd>{{formatDateTime t.completed_at}}</dd></div>{{/if}}
+      </dl>
+    </section>
+    {{#if canChange}}
+    <section class="rounded-xl border border-slate-200 bg-white p-5 text-sm shadow-sm">
+      <h3 class="mb-2 font-semibold">Mark as done</h3>
+      <form method="POST" action="/crm/follow-ups/{{t.id}}/complete" class="space-y-2"><input type="hidden" name="_csrf" value="{{csrfToken}}">
+        <input name="note" maxlength="200" placeholder="Outcome (optional)" aria-label="Outcome" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm">
+        <button class="w-full rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700">Done</button></form>
+    </section>
+    <section class="rounded-xl border border-slate-200 bg-white p-5 text-sm shadow-sm">
+      <h3 class="mb-2 font-semibold">Reschedule</h3>
+      <form method="POST" action="/crm/follow-ups/{{t.id}}/reschedule" class="space-y-2"><input type="hidden" name="_csrf" value="{{csrfToken}}">
+        <input name="due_at" type="datetime-local" value="{{dueLocal}}" required aria-label="New due date" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm">
+        <button class="w-full rounded-lg border border-slate-300 px-4 py-2 text-sm hover:bg-slate-50">Reschedule</button></form>
+    </section>
+    <section class="rounded-xl border border-slate-200 bg-white p-5 text-sm shadow-sm">
+      <h3 class="mb-2 font-semibold">Cancel</h3>
+      <form method="POST" action="/crm/follow-ups/{{t.id}}/cancel" class="space-y-2" onsubmit="return confirm('Cancel this follow-up?');"><input type="hidden" name="_csrf" value="{{csrfToken}}">
+        <input name="reason" required minlength="{{minReason}}" maxlength="200" placeholder="Why is it no longer needed?" aria-label="Reason" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm">
+        <button class="w-full rounded-lg border border-red-300 px-4 py-2 text-sm text-red-700 hover:bg-red-50">Cancel follow-up</button></form>
+    </section>
+    {{/if}}
+    {{#if canAssign}}
+    <section class="rounded-xl border border-slate-200 bg-white p-5 text-sm shadow-sm">
+      <h3 class="mb-2 font-semibold">Reassign</h3>
+      <form method="POST" action="/crm/follow-ups/{{t.id}}/reassign" class="space-y-2"><input type="hidden" name="_csrf" value="{{csrfToken}}">
+        <select name="assigned_to" required aria-label="Assign to" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"><option value="">Choose…</option>{{#each staff}}<option value="{{id}}" {{#if current}}disabled{{/if}}>{{name}} — {{role}}{{#if current}} (current){{/if}}</option>{{/each}}</select>
+        <button class="w-full rounded-lg bg-violet-700 px-4 py-2 text-sm font-medium text-white hover:bg-violet-800">Reassign</button></form>
+    </section>
+    {{/if}}
+  </aside>
+</div>
+{{> layout_bottom}}

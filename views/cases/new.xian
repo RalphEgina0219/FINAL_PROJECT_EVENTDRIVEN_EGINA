@@ -1,0 +1,26 @@
+{{> layout_top}}
+<a href="/portal/cases" class="mb-4 inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-700">{{icon "arrow-left" "h-4 w-4"}} Back to my cases</a>
+<div class="max-w-3xl rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+  <p class="mb-4 text-sm text-slate-500">Tell us what happened. Our customer service team replies here and you are notified of every update.</p>
+  {{#if errors.length}}<ul class="mb-4 list-disc space-y-1 rounded-lg border border-red-200 bg-red-50 py-3 pl-8 pr-4 text-sm text-red-800" role="alert">{{#each errors}}<li>{{this}}</li>{{/each}}</ul>{{/if}}
+  <form method="POST" action="/portal/cases" enctype="multipart/form-data" class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+    <input type="hidden" name="_csrf" value="{{csrfToken}}">
+    <div><label class="block text-sm font-medium text-slate-700" for="case_type">Type of concern *</label>
+      <select id="case_type" name="case_type" required class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2">{{#each typeOptions}}<option value="{{value}}" {{selected ../form.case_type value}}>{{label}}</option>{{/each}}</select></div>
+    <div><label class="block text-sm font-medium text-slate-700" for="category_id">Category *</label>
+      <select id="category_id" name="category_id" required class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2"><option value="">Choose…</option>{{#each categories}}<option value="{{id}}" {{selected ../form.category_id id}} title="{{description}}">{{name}}</option>{{/each}}</select></div>
+    <div><label class="block text-sm font-medium text-slate-700" for="priority">Priority *</label>
+      <select id="priority" name="priority" required class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2">{{#each priorityOptions}}<option value="{{value}}" {{selected ../form.priority value}}>{{label}}</option>{{/each}}</select></div>
+    <div><label class="block text-sm font-medium text-slate-700" for="order_reference">Order / receipt no.</label>
+      <input id="order_reference" name="order_reference" value="{{form.order_reference}}" maxlength="60" placeholder="e.g. ORD-10452 or OR-00871" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2"></div>
+    <div class="sm:col-span-2"><label class="block text-sm font-medium text-slate-700" for="subject">Subject *</label>
+      <input id="subject" name="subject" value="{{form.subject}}" required minlength="5" maxlength="150" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2"></div>
+    <div class="sm:col-span-2"><label class="block text-sm font-medium text-slate-700" for="description">Details *</label>
+      <textarea id="description" name="description" rows="6" required minlength="15" maxlength="5000" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2">{{form.description}}</textarea></div>
+    <div class="sm:col-span-2"><label class="block text-sm font-medium text-slate-700" for="attachments">Attachments</label>
+      <input id="attachments" type="file" name="attachments" multiple accept=".jpg,.jpeg,.png,.pdf,.docx" class="mt-1 block w-full text-sm file:mr-3 file:rounded-lg file:border-0 file:bg-slate-100 file:px-3 file:py-2 hover:file:bg-slate-200">
+      <p class="mt-1 text-xs text-slate-500">Up to {{maxFiles}} files · JPG, PNG, PDF, DOCX · 5 MB each</p></div>
+    <div class="sm:col-span-2"><button class="rounded-lg bg-violet-700 px-5 py-2.5 font-medium text-white hover:bg-violet-800">Submit</button></div>
+  </form>
+</div>
+{{> layout_bottom}}

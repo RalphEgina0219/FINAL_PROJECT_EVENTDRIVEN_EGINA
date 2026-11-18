@@ -1,0 +1,20 @@
+{{#if workload.length}}
+<div class="overflow-x-auto">
+<table class="stack min-w-full text-sm">
+  <thead class="bg-slate-50 text-left text-xs font-medium uppercase tracking-wide text-slate-500">
+    <tr><th class="px-4 py-2">Agent</th><th class="px-4 py-2 text-right">New</th><th class="px-4 py-2 text-right">In progress</th><th class="px-4 py-2 text-right">Waiting</th><th class="px-4 py-2 text-right">Escalated</th><th class="px-4 py-2 text-right">Overdue</th><th class="px-4 py-2 text-right">Resolved/Closed</th><th class="px-4 py-2 text-right">Avg 1st response</th><th class="px-4 py-2 text-right">Avg resolution</th><th class="px-4 py-2 text-right">Avg rating</th></tr>
+  </thead>
+  <tbody class="divide-y divide-slate-100 tabular-nums">
+  {{#each workload}}
+    <tr><td class="px-4 py-3"><span class="font-medium text-slate-900">{{name}}</span> {{#if is_mock}}{{mockBadge}}{{/if}} {{#if is_demo}}{{demoBadge}}{{/if}}
+        <p class="text-xs text-slate-500">{{#if team_name}}{{team_name}}{{else}}No team{{/if}} · HR: {{employmentLabel employment_status}}{{#if access_revoked_at}} · <span class="text-red-600">CRM access removed</span>{{/if}}{{#unless is_active}} · <span class="text-red-600">deactivated</span>{{/unless}}{{#unless is_available}} · unavailable{{/unless}}</p></td>
+      <td class="px-4 py-3 text-right">{{new_count}}</td><td class="px-4 py-3 text-right">{{in_progress_count}}</td><td class="px-4 py-3 text-right">{{waiting_count}}</td>
+      <td class="px-4 py-3 text-right">{{escalated_count}}</td>
+      <td class="px-4 py-3 text-right {{#if overdue_count}}font-semibold text-red-600{{/if}}">{{overdue_count}}</td>
+      <td class="px-4 py-3 text-right">{{done_count}}</td><td class="px-4 py-3 text-right">{{duration avg_first_response}}</td><td class="px-4 py-3 text-right">{{duration avg_resolution_minutes}}</td>
+      <td class="px-4 py-3 text-right">{{#if rating_count}}{{fixed avg_rating 1}} ★ <span class="text-xs text-slate-500">({{rating_count}})</span>{{else}}—{{/if}}</td></tr>
+  {{/each}}
+  </tbody>
+</table>
+</div>
+{{else}}<p class="px-6 py-8 text-center text-sm text-slate-500">No agents yet.</p>{{/if}}

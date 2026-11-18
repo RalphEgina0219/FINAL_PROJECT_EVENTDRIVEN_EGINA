@@ -1,0 +1,24 @@
+{{> layout_top}}
+{{> area_tabs}}
+<p class="mb-4 max-w-3xl text-xs text-slate-500">{{rules}} Every earn, redemption, reversal and return is recorded; the balances below are computed from those records. Demo customers are labelled.</p>
+<div class="mb-4 grid grid-cols-2 gap-3 lg:grid-cols-4">
+  {{> stat label="Loyalty accounts" value=summary.accounts href="/crm/loyalty"}}
+  {{> stat label="Points outstanding" value=summary.outstanding href="/crm/loyalty" hint=(concat "worth ₱" summary.worth " in discounts")}}
+  {{> stat label="Points earned (all time)" value=summary.earned href="/crm/loyalty"}}
+  {{> stat label="Points redeemed (all time)" value=summary.redeemed href="/crm/loyalty"}}
+</div>
+<form method="GET" action="/crm/loyalty" class="mb-4 flex flex-wrap items-end gap-2 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+  <div class="min-w-0 flex-1"><label class="text-xs font-medium text-slate-500" for="q">Search</label><input id="q" name="q" value="{{q}}" placeholder="Customer name or CUS- number" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"></div>
+  <button class="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700">Search</button>
+</form>
+<section class="rounded-xl border border-slate-200 bg-white shadow-sm">
+  {{#if rows.length}}
+  <div class="overflow-x-auto"><table class="stack min-w-full text-sm">
+    <thead class="bg-slate-50 text-left text-xs font-medium uppercase tracking-wide text-slate-500"><tr><th class="px-4 py-2">Customer</th><th class="px-4 py-2 text-right">Balance</th><th class="px-4 py-2 text-right">Earned</th><th class="px-4 py-2 text-right">Redeemed</th><th class="px-4 py-2 text-right">Taken back</th><th class="px-4 py-2 text-right">Returned</th><th class="px-4 py-2">Last activity</th></tr></thead>
+    <tbody class="divide-y divide-slate-100">
+    {{#each rows}}<tr data-account="{{customer_no}}"><td class="px-4 py-3"><a href="/crm/loyalty/{{customer_id}}" class="font-medium text-violet-700 hover:underline">{{customer_name}}</a> {{#if is_demo}}{{demoBadge}}{{/if}}<p class="font-mono text-xs text-slate-500">{{customer_no}}</p></td><td class="px-4 py-3 text-right font-semibold tabular-nums">{{points_balance}}</td><td class="px-4 py-3 text-right tabular-nums">{{earned}}</td><td class="px-4 py-3 text-right tabular-nums">{{redeemed}}</td><td class="px-4 py-3 text-right tabular-nums">{{reversed}}</td><td class="px-4 py-3 text-right tabular-nums">{{returned_points}}</td><td class="px-4 py-3 text-xs text-slate-500">{{formatDateTime last_activity}}</td></tr>{{/each}}
+    </tbody></table></div>
+  {{else}}<p class="px-6 py-10 text-center text-sm text-slate-500">No loyalty accounts{{#if q}} match{{else}} yet: an account is opened at a customer's first completed purchase{{/if}}.</p>{{/if}}
+  {{> pagination}}
+</section>
+{{> layout_bottom}}

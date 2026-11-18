@@ -1,0 +1,99 @@
+{{> layout_top}}
+{{> settings_tabs}}
+<div class="mb-4 rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm text-slate-600 shadow-sm">
+  {{icon "lock" "inline h-3.5 w-3.5"}} <strong>HR owns the employee.</strong> Names, positions, departments and employment status below are read-only copies from JOHNVIVZ HR{{#if (eq hrMode "mock")}} ({{mockBadge}} <strong>mock HR fixture</strong>, until HR is connected){{/if}}.
+  <strong>Staff accounts are created from HR</strong> for the <span class="font-mono">{{departmentCode}}</span> department: each new hire gets a switched-off account, "Waiting for ESS registration", with no CRM password. The person registers in ESS (Accounting app), then signs in here with the work email and the ESS password; the first sign-in activates the account. Resigned or Terminated in HR removes the access. You choose the team and may change the role.
+  <p class="mt-2 text-xs text-slate-500" data-ess-mode="{{essMode}}">Staff sign-in: {{#if (eq essMode "live")}}<strong>ESS (live)</strong>: every staff password is checked by ESS.{{else}}<strong>mock ESS</strong>: the demo accounts keep their CRM password; accounts created from HR use the mock ESS registry (setup administrator, Setup › Staff).{{/if}}</p>
+</div>
+
+<section class="mb-8 rounded-xl border border-slate-200 bg-white shadow-sm" data-staff-rules="1">
+  <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 px-4 py-3">
+    <h2 class="font-semibold text-slate-900">Staff accounts from HR</h2>
+    <form method="POST" action="/crm/settings/access/provision"><input type="hidden" name="_csrf" value="{{csrfToken}}">
+      <button class="rounded-lg bg-violet-700 px-3 py-1.5 text-sm font-medium text-white hover:bg-violet-800">Create accounts from HR now</button></form>
+  </div>
+  <form method="POST" action="/crm/settings/access/rules" class="space-y-3 px-4 py-3 text-sm"><input type="hidden" name="_csrf" value="{{csrfToken}}">
+    <label class="flex flex-wrap items-center gap-2"><span class="text-slate-700">CRM department code in HR</span>
+      <input name="department_code" value="{{departmentCode}}" required maxlength="30" pattern="[A-Za-z0-9._\-]+" class="w-32 rounded border border-slate-300 px-2 py-1 font-mono text-xs"></label>
+    <p class="text-xs text-slate-500">Role from the HR position: exact titles are checked first, then the "contains" rules in order. A title that matches nothing becomes <strong>Agent</strong> and is flagged below for your review. A role you change by hand for one person is kept.</p>
+    {{#if reviewCount}}<p class="rounded border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-900" data-review-count="{{reviewCount}}">{{reviewCount}} account(s) got the role Agent because their HR position matched no rule. Check them in the list below.</p>{{/if}}
+    <div class="grid gap-2 sm:grid-cols-2">
+      {{#each ruleRows}}
+      <div class="flex items-center gap-2">
+        <select name="match_{{i}}" aria-label="How to match {{i}}" class="rounded border border-slate-300 px-1 py-1 text-xs">{{#each ../matchOptions}}<option value="{{value}}" {{selected ../match value}}>{{label}}</option>{{/each}}</select>
+        <input name="text_{{i}}" value="{{text}}" maxlength="60" aria-label="Position title {{i}}" class="w-40 rounded border border-slate-300 px-2 py-1 text-xs">
+        <span class="text-xs text-slate-500">→</span>
+        <select name="role_{{i}}" aria-label="CRM role {{i}}" class="rounded border border-slate-300 px-1 py-1 text-xs"><option value="">—</option>{{#each ../ruleRoleOptions}}<option value="{{value}}" {{selected ../role value}}>{{label}}</option>{{/each}}</select></div>
+      {{/each}}
+    </div>
+    <button class="rounded border border-slate-300 px-3 py-1 text-xs hover:bg-slate-50">Save department and rules</button>
+  </form>
+</section>
+
+<section class="mb-8 rounded-xl border border-slate-200 bg-white shadow-sm">
+  <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 px-4 py-3">
+    <h2 class="font-semibold text-slate-900">Teams</h2>
+    <form method="POST" action="/crm/settings/access/teams" class="flex gap-2"><input type="hidden" name="_csrf" value="{{csrfToken}}">
+      <input name="name" required minlength="3" maxlength="100" placeholder="New team name" aria-label="New team name" class="rounded-lg border border-slate-300 px-3 py-1.5 text-sm">
+      <button class="rounded-lg bg-violet-700 px-3 py-1.5 text-sm font-medium text-white hover:bg-violet-800">Add team</button></form>
+  </div>
+  <div class="overflow-x-auto"><table class="stack min-w-full text-sm">
+    <thead class="bg-slate-50 text-left text-xs font-medium uppercase tracking-wide text-slate-500"><tr><th class="px-4 py-2">Team</th><th class="px-4 py-2">Team Leader</th><th class="px-4 py-2">Agents</th><th class="px-4 py-2">Active cases</th><th class="px-4 py-2">Actions</th></tr></thead>
+    <tbody class="divide-y divide-slate-100 align-top">
+    {{#each teams}}
+      <tr>
+        <td class="px-4 py-3"><span class="font-medium">{{name}}</span> <span class="font-mono text-xs text-slate-400">{{team_code}}</span>{{#unless is_active}} <span class="rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-500">Inactive</span>{{/unless}}</td>
+        <td class="px-4 py-3">{{#if leader_name}}{{leader_name}}{{else}}<span class="text-slate-400">No Team Leader</span>{{/if}}</td>
+        <td class="px-4 py-3">{{agent_count}}</td>
+        <td class="px-4 py-3">{{active_cases}}</td>
+        <td class="px-4 py-3">
+          <form method="POST" action="/crm/settings/access/teams/{{id}}" class="flex flex-wrap items-center gap-1"><input type="hidden" name="_csrf" value="{{../csrfToken}}">
+            <input name="name" value="{{name}}" required minlength="3" maxlength="100" aria-label="Team name" class="w-44 rounded border border-slate-300 px-2 py-1 text-xs">
+            <select name="team_leader_id" aria-label="Team Leader" class="rounded border border-slate-300 px-1 py-1 text-xs"><option value="">No Team Leader</option>{{#each leaders}}<option value="{{user_id}}" {{selected ../team_leader_id user_id}}>{{full_name}}</option>{{/each}}</select>
+            <button class="rounded border border-slate-300 px-2 py-1 text-xs hover:bg-slate-50">Save</button></form>
+          <form method="POST" action="/crm/settings/access/teams/{{id}}/toggle" class="mt-1"><input type="hidden" name="_csrf" value="{{../csrfToken}}"><input type="hidden" name="active" value="{{#if is_active}}0{{else}}1{{/if}}">
+            <button class="rounded border border-slate-300 px-2 py-1 text-xs hover:bg-slate-50">{{#if is_active}}Deactivate team{{else}}Reactivate team{{/if}}</button></form>
+        </td>
+      </tr>
+    {{/each}}
+    </tbody></table></div>
+</section>
+
+<section class="rounded-xl border border-slate-200 bg-white shadow-sm">
+  <div class="border-b border-slate-100 px-4 py-3"><h2 class="font-semibold text-slate-900">HR employees and CRM access</h2></div>
+  <div class="overflow-x-auto"><table class="stack min-w-full text-sm">
+    <thead class="bg-slate-50 text-left text-xs font-medium uppercase tracking-wide text-slate-500"><tr><th class="px-4 py-2">HR employee (read-only)</th><th class="px-4 py-2">HR status</th><th class="px-4 py-2">CRM account</th><th class="px-4 py-2">Actions</th></tr></thead>
+    <tbody class="divide-y divide-slate-100 align-top">
+    {{#each staff}}
+      <tr data-employee="{{employee_id}}" data-state="{{state}}">
+        <td class="px-4 py-3"><span class="font-medium">{{full_name}}</span> {{#if is_mock}}{{mockBadge}}{{/if}}<p class="font-mono text-xs text-slate-500">{{employee_id}}</p><p class="text-xs text-slate-500">{{position_title}}{{#if department_name}} · {{department_name}}{{/if}}</p><p class="text-xs text-slate-400">{{work_email}}</p></td>
+        <td class="px-4 py-3">{{employmentLabel employment_status}}<p class="text-xs text-slate-400">synced {{timeAgo last_synced_at}}</p></td>
+        <td class="px-4 py-3">
+          {{#if user_id}}
+            <span class="rounded-full px-2 py-0.5 text-xs font-medium {{#if (eq state "active")}}bg-emerald-50 text-emerald-800{{else}}{{#if (eq state "waiting")}}bg-amber-50 text-amber-800{{else}}bg-red-50 text-red-700{{/if}}{{/if}}">{{stateLabel}}</span>
+            <p class="mt-1"><span class="font-medium">{{this.roleLabel}}</span>{{#if team_name}} · {{team_name}}{{else}} · <span class="text-slate-400">no team yet</span>{{/if}}{{#if roleByHand}} <span class="text-xs text-slate-400">(role set by hand)</span>{{/if}}</p>
+            {{#if needsReview}}<p class="text-xs font-medium text-amber-700" data-needs-review="1">Role needs review: the HR position "{{position_title}}" matched no rule, so it is Agent by default.</p>{{/if}}
+            {{#if access_revoked_at}}<p class="text-xs text-red-600">{{access_revoked_reason}}</p>{{/if}}
+            <p class="text-xs text-slate-400">{{#if viaEss}}signs in with the ESS password{{else}}CRM password (demo / setup){{/if}} · {{#if last_login_at}}last sign-in {{formatDateTime last_login_at}}{{else}}never signed in{{/if}} · {{active_cases}} active case(s)</p>
+          {{else}}<span class="text-slate-400">No CRM account</span><p class="text-xs text-slate-500">{{noAccountWhy}}</p>{{/if}}
+        </td>
+        <td class="px-4 py-3">
+          {{#if isSelf}}<span class="text-xs text-slate-500">This is you.</span>
+          {{else}}{{#if canManage}}
+            <form method="POST" action="/crm/settings/access/users/{{user_id}}/assignment" class="mb-2 flex flex-wrap items-center gap-1"><input type="hidden" name="_csrf" value="{{../csrfToken}}">
+              <select name="role" aria-label="CRM role" class="rounded border border-slate-300 px-1 py-1 text-xs">{{#each ../roleOptions}}<option value="{{value}}" {{selected ../role value}}>{{label}}</option>{{/each}}</select>
+              <select name="team_id" aria-label="Team" class="rounded border border-slate-300 px-1 py-1 text-xs"><option value="">No team (CRM Manager)</option>{{#each ../activeTeams}}<option value="{{id}}" {{selected ../team_id id}}>{{name}}</option>{{/each}}</select>
+              <input name="reason" required minlength="5" maxlength="255" placeholder="Reason" aria-label="Reason for the change" class="w-36 rounded border border-slate-300 px-2 py-1 text-xs">
+              <button class="rounded border border-slate-300 px-2 py-1 text-xs hover:bg-slate-50">{{#if waiting}}Set role / team{{else}}Change role / team{{/if}}</button></form>
+            {{#if canSwitch}}<form method="POST" action="/crm/settings/access/users/{{user_id}}/access" class="flex flex-wrap items-center gap-1"><input type="hidden" name="_csrf" value="{{../csrfToken}}"><input type="hidden" name="active" value="{{#if is_active}}0{{else}}1{{/if}}">
+              <input name="reason" required minlength="5" maxlength="255" placeholder="Reason" aria-label="Reason" class="w-36 rounded border border-slate-300 px-2 py-1 text-xs">
+              <button class="rounded border border-slate-300 px-2 py-1 text-xs hover:bg-slate-50">{{#if is_active}}Switch access off{{else}}Switch access on{{/if}}</button></form>{{/if}}
+            {{#if waiting}}<p class="text-xs text-amber-700">Activates by itself at the first sign-in with the ESS password.</p>{{/if}}
+          {{else}}{{#if isManagerRow}}<span class="text-xs text-slate-500">CRM Manager login: managed by the setup administrator.</span>{{/if}}{{/if}}{{/if}}
+        </td>
+      </tr>
+    {{/each}}
+    </tbody></table></div>
+</section>
+<p class="mt-3 text-xs text-slate-500">Every change on this page is written to the Audit Log with the reason and the before/after values. Nobody chooses or sees a staff password: staff use their ESS password, and they change it in ESS.</p>
+{{> layout_bottom}}
